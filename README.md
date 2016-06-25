@@ -1,5 +1,8 @@
 # Tarsana Syntax
 
+[![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
+[![License](https://poser.pugx.org/laravel/framework/license.svg)](http://opensource.org/licenses/MIT)
+
 A tool to encode and decode strings based on data structure definitions.
 
 # Table of Contents
@@ -8,7 +11,7 @@ A tool to encode and decode strings based on data structure definitions.
 
 - [Installation](#installation)
 
-- [Documentation](#documentation)
+- [API Documentation](#api-documentation)
 
 - [Next Steps](#next-features)
 
@@ -30,7 +33,7 @@ Walter Phillips 423
 
 Let's do it:
 
-```
+```php
 <?php
 
 
@@ -64,7 +67,7 @@ $developers = $documentSyntax->parse(trim(file_get_contents('path/to/the/file'))
 
 `$developers` will contain the following:
 
-```
+```json
 [
   {
     "first_name": "Tammy",
@@ -111,7 +114,7 @@ $developers = $documentSyntax->parse(trim(file_get_contents('path/to/the/file'))
 
 You modified `$developers` and want to save it back to the document following the same syntax ? You can do it:
 
-```
+```php
 // ... manipulating $developers
 
 file_put_contents('path/to/file', $documentSyntax->dump($developers));
@@ -126,10 +129,79 @@ Install it using composer
 composer require tarsana/syntax
 ```
 
-# Documentation
+# API Documentation
 
-...
+As you have seen in the example above, **Syntax** let's you define syntaxes and use them to convert text to objects and the inverse. 
 
-# Next Steps
+## Syntax
 
-...
+The abstract class `Tarsana\Syntax\Syntax` defines the basic behavior of a syntax, it includes 5 abstract methods that should be implemented by every `Syntax`.
+
+### Syntax::checkParse()
+
+```php
+/**
+ * Checks if the provided string can be parsed using the 
+ * syntax and returns an array of parsing errors if any.
+ * 
+ * @param  string $text
+ * @return array
+ */
+abstract public function checkParse($text);
+```
+
+The returned array is simply an array of strings. An empty array means that the given `$text` can be parsed using the syntax.
+
+### Syntax::doParse()
+
+```php
+/**
+ * Transforms a string to data based on the syntax.
+ * 
+ * @param  string $text the string to parse
+ * @return mixed
+ */
+abstract protected function doParse($text);
+```
+
+This method assumes that `$text` has been already checked and can be parsed. It simply parses it and returns the result.
+
+### Syntax::checkDump()
+
+```php
+/**
+ * Checks if the provided argument can be dumped using the 
+ * syntax, and returns an array of dumping errors if any.
+ * 
+ * @param  mixed $value
+ * @return array
+ */
+abstract public function checkDump($value);
+```
+Similar to `checkParse()`.
+
+### Syntax::doDump()
+
+```php
+/**
+ * Converts the given parameter to a string based on the syntax.
+ * 
+ * @param  mixed $value the data to encode
+ * @return string
+ */
+abstract protected function doDump($value);
+```
+Similar to `doParse()`.
+
+### Syntax::__toString()
+
+```php
+/**
+ * Returns the string representation of the syntax.
+ * 
+ * @return string
+ */
+abstract public function __toString();
+```
+Used to generate errors. Should return a detailed description of the syntax.
+
