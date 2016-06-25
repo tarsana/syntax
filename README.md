@@ -370,6 +370,12 @@ To write your own custom syntax class, you just need to inherit from [`Syntax`](
 
 - **version 1.0.0**: String, Number, Boolean, Array and Object syntaxes.
 
+- **version 1.0.1**: 
+
+  - Tests coverage is now **100%**
+
+  - Some small bugs of `ArraySyntax` and `ObjectSyntax` fixed.
+
 # Contributing
 
 Please take a look at the code and see how other syntax classes are done and tested before fixing or creating a syntax. All feedbacks and pull requests are welcome :D
