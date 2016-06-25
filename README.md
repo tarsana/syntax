@@ -13,6 +13,20 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
 - [Step by Step Guide](#step-by-step-guide)
 
+  - [Parsing and Dumping Strings](#parsing-and-dumping-strings)
+
+  - [Parsing and Dumping Numbers](#parsing-and-dumping-numbers)
+
+  - [Parsing and Dumping Booleans](#parsing-and-dumping-booleans)
+
+  - [Parsing and Dumping Arrays](#parsing-and-dumping-arrays)
+
+  - [Parsing and Dumping Objects](#parsing-and-dumping-objects)
+
+  - [Using the Factory](#using-the-factory)
+
+  - [Write Your Own Syntax Definition](#write-your-own-syntax-definition)
+
 - [Next Steps](#next-steps)
 
 - [Development Notes](#development-notes)
@@ -338,6 +352,10 @@ $syntax = S::number(); // $syntax = new NumberSyntax();
 $syntax = S::arr(...); // $syntax = new ArraySyntax(...);
 $syntax = S::obj(...); // $syntax = new ObjectSyntax(...);
 ```
+
+## Write Your Own Syntax Definition
+
+To write your own custom syntax class, you just need to inherit from [`Syntax`](https://github.com/tarsana/syntax/blob/master/docs/Syntax.md) and implement the missing methods.
 
 # Next Steps
 
