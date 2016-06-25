@@ -28,7 +28,7 @@ class BooleanSyntax extends Syntax {
     {
         return in_array (
             strtolower(trim($text)), 
-            ['true', 'yes', 'y', '1', 'false', 'no', 'n', '0']
+            ['true', 'yes', 'y', 'false', 'no', 'n']
         ) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
     }
 
@@ -40,7 +40,7 @@ class BooleanSyntax extends Syntax {
      */
     protected function doParse($text)
     {
-        if (in_array(strtolower(trim($text)), ['true', 'yes', 'y', '1']))
+        if (in_array(strtolower(trim($text)), ['true', 'yes', 'y']))
             return true;
         return false;
     }

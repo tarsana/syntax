@@ -3,19 +3,25 @@
 [![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
 [![License](https://poser.pugx.org/laravel/framework/license.svg)](http://opensource.org/licenses/MIT)
 
-A tool to encode and decode strings based on data structure definitions.
+A tool to encode and decode strings based on flexible and composable syntax definitions.
 
 # Table of Contents
 
-- [Short Example](#short-example)
+- [Quick Example](#quick-example)
 
 - [Installation](#installation)
 
-- [API Documentation](#api-documentation)
+- [Step by Step Guide](#step-by-step-guide)
 
-- [Next Steps](#next-features)
+- [Next Steps](#next-steps)
 
-# Short Example
+- [Development Notes](#development-notes)
+
+- [Contributing](#contributing)
+
+# Quick Example
+
+**Warning**: This is just a teaser so if the code seems confusing don't worry, you will understand it after reading the [Step by Step Guide](#step-by-step-guide).
 
 Let's assume that you have the following text representing a list of developers where each line follow the syntax:
 
@@ -35,8 +41,6 @@ Let's do it:
 
 ```php
 <?php
-
-
 use Tarsana\Syntax\Factory as S;
 
 // Define the syntax of a repository part
@@ -120,7 +124,6 @@ You modified `$developers` and want to save it back to the document following th
 file_put_contents('path/to/file', $documentSyntax->dump($developers));
 ```
 
-
 # Installation
 
 Install it using composer
@@ -129,10 +132,225 @@ Install it using composer
 composer require tarsana/syntax
 ```
 
-# API Documentation
+# Step by Step Guide
 
-As you have seen in the example above, **Syntax** let's you define syntaxes and use them to convert text to objects and the inverse. 
+## Parsing and Dumping Strings
 
-## Classes
+```php
+<?php
+use Tarsana\Syntax\StringSyntax;
 
-- [Syntax](https://github.com/tarsana/syntax/blob/master/docs/Syntax.md)
+$string = new StringSyntax(); // any non empty string
+
+$string->parse('Lorem ipsum dolor sit amet');
+// 'Lorem ipsum dolor sit amet'
+$string->parse('');
+// Tarsana\Syntax\Exceptions\ParseException: Unable to parse '' as 'string'
+
+$string->dump('Lorem ipsum dolor sit amet');
+// 'Lorem ipsum dolor sit amet'
+$string->dump('');
+// ''
+
+$stringWithDefaultValue = new StringSyntax('default value here'); // any string
+
+$stringWithDefaultValue->parse('');
+// 'default value here'
+```
+
+## Parsing and Dumping Numbers
+
+```php
+<?php
+use Tarsana\Syntax\NumberSyntax;
+
+$number = new NumberSyntax(); // any numeric value
+
+$number->parse('58.9');
+// 58.9
+
+$number->parse('Lorem');
+// Tarsana\Syntax\Exceptions\ParseException: Unable to parse 'Lorem' as 'number'
+```
+
+## Parsing and Dumping Booleans
+```php
+<?php
+use Tarsana\Syntax\BooleanSyntax;
+
+$boolean = new BooleanSyntax();
+
+$boolean->parse('true');
+// true
+$boolean->parse('yes');
+// true
+$boolean->parse('y');
+// true
+$boolean->parse('TrUe'); // case insensitive
+// true
+
+$boolean->parse('false');
+// false
+$boolean->parse('no');
+// false
+$boolean->parse('N');
+// false
+
+$boolean->parse('Lorem');
+// Tarsana\Syntax\Exceptions\ParseException: Unable to parse 'Lorem' as 'boolean'
+
+$boolean->dump(true);
+// 'true'
+$boolean->dump(false);
+// 'false'
+$boolean->dump('Lorem');
+// Tarsana\Syntax\Exceptions\DumpException: Unable to dump 'Lorem' as 'boolean'
+```
+
+## Parsing and Dumping Arrays
+
+`ArraySyntax` represents an array of elements having the same syntax and separated by the same string. So an `ArraySyntax` is constructed using a `Syntax` (could be `NumberSyntax`, `StringSyntax` or any other) and a `separator`. It can also have a default value as 3rd argument of the constructor.
+
+- if the `Syntax` argument is missing, an instance of `StringSyntax` is used by default.
+
+- if the `separator` argument is missing, `','` is used by default.
+
+```php
+<?php
+use Tarsana\Syntax\ArraySyntax;
+use Tarsana\Syntax\NumberSyntax;
+
+$strings = new ArraySyntax();
+
+$strings->parse('aa:bb,cc,ss,089,true');
+// ['aa:bb','cc','ss','089','true']
+// Yeah, this is the same as explode(',', ....)
+
+$strings->dump(['aa','bb','76']);
+// 'aa,bb,76'
+// Yeah, this is the same as implode(',', ....)
+
+$vector = new ArraySyntax(new NumberSyntax());
+
+$vector->parse('1,2,3,4,5');
+// [1, 2, 3, 4, 5]
+
+$matrix = new ArraySyntax($vector, PHP_EOL);
+
+$matrix->parse(
+'1,2,3
+4,5,6,7
+8,9,100');
+// [ [1, 2, 3], [4, 5, 6, 7], [8, 9, 100] ]
+```
+
+## Parsing and Dumping Objects
+
+`ObjectSyntax` represents an object in which every field can have its own syntax. It's defined by providing an associative array of fields and a `separator` (if missing, the separator by default is `':'`).
+
+```php
+<?php
+use Tarsana\Syntax\ArraySyntax;
+use Tarsana\Syntax\BooleanSyntax;
+use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\ObjectSyntax;
+use Tarsana\Syntax\StringSyntax;
+
+$repository = new ObjectSyntax([
+    'name' => new StringSyntax(),
+    'is_private' => new BooleanSyntax(false),
+    'forks' => new NumberSyntax(0),
+    'stars' => new NumberSyntax(0)
+]);
+// is_private, forks and stars are optional fields 
+// because they have default values
+
+$repository->parse('tarsana/syntax');
+// an stdClass as below
+// {
+//  name: 'tarsana/syntax',
+//  is_private: false,
+//  forks: 0,
+//  stars: 0
+// }
+
+$repository->parse('tarsana/syntax:5');
+// {
+//  name: 'tarsana/syntax',
+//  is_private: false,
+//  forks: 5,
+//  stars: 0
+// }
+
+$repository->parse('tarsana/syntax:yes:7');
+// {
+//  name: 'tarsana/syntax',
+//  is_private: true,
+//  forks: 7,
+//  stars: 0
+// }
+
+$data = (object) [
+    'name' => 'foo/bar',
+    'is_private' => false,
+    'forks' => 9,
+    'stars' => 3
+];
+
+$repository->dump($data);
+// 'foo/bar:false:9:3'
+
+$developer = new ObjectSyntax([
+    'name' => new StringSyntax(),
+    'followers' => new NumberSyntax(0),
+    'repositories' => new ArraySyntax($repository, ',', [])
+], ' ');
+
+$developer->parse('Amine');
+// {
+//  name: 'Amine',
+//  followers: 0,
+//  repositories: []
+// }
+
+$developer->parse('Amine tarsana/syntax,webNeat/lumen-generators:16:57');
+// {
+//  name: 'Amine',
+//  followers: 0,
+//  repositories: [
+//      { name: 'tarsana/syntax', is_private: false, forks: 0, stars: 0 },
+//      { name: 'webNeat/lumen-generators', is_private: false, forks: 16, stars: 57 }
+//  ]
+// }
+```
+
+## Using the Factory
+
+The class `Tarsana\Syntax\Factory` provides some static methods to get ride of the `new` keyword when defining syntaxes. These methods are just aliases and have the same parameters as the constructors.
+
+```php
+<?php
+use Tarsana\Syntax\Factory as S;
+
+$syntax = S::string(); // $syntax = new StringSyntax();
+$syntax = S::boolean(); // $syntax = new BooleanSyntax();
+$syntax = S::number(); // $syntax = new NumberSyntax();
+$syntax = S::arr(...); // $syntax = new ArraySyntax(...);
+$syntax = S::obj(...); // $syntax = new ObjectSyntax(...);
+```
+
+# Next Steps
+
+- Define syntaxes using JSON or YAML files.
+
+- Design a plain text language to define syntaxes.
+
+- Add more advanced syntaxes: Regular Expression, Date, ...
+
+# Development Notes
+
+- **version 1.0.0**: String, Number, Boolean, Array and Object syntaxes.
+
+# Contributing
+
+Please take a look at the code and see how other syntax classes are done and tested before fixing or creating a syntax. All feedbacks and pull requests are welcome :D

@@ -6,8 +6,8 @@ class BooleanSyntaxTest extends PHPUnit_Framework_TestCase {
     
     public function testParse() {
         $syntax = S::boolean();
-        $trueInputs = ['true', 'yes', 'TRue', 'yeS', 'Y', '1'];
-        $falseInputs = ['false', 'no', 'No', 'N', '0'];
+        $trueInputs = ['true', 'yes', 'TRue', 'yeS', 'Y'];
+        $falseInputs = ['false', 'no', 'No', 'N'];
         foreach ($trueInputs as $input) {
             $this->assertTrue($syntax->parse($input));
         }

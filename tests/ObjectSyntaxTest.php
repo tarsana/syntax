@@ -19,7 +19,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
             'friends' => ['Bar', 'Baz']
         ];
 
-        $this->assertEquals($object, $syntax->parse('Foo:76:0:Bar,Baz'));
+        $this->assertEquals($object, $syntax->parse('Foo:76:no:Bar,Baz'));
     }
 
     public function testParseCustomSeparator() {
@@ -37,7 +37,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
             'friends' => ['Bar', 'Baz']
         ];
 
-        $this->assertEquals($object, $syntax->parse('Foo|76|0|Bar,Baz'));
+        $this->assertEquals($object, $syntax->parse('Foo|76|false|Bar,Baz'));
     }
 
     public function testParseWithOptionalFields() {

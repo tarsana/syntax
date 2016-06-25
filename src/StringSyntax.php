@@ -23,7 +23,7 @@ class StringSyntax extends Syntax {
      */
     public function checkParse($text)
     {
-        return is_string($text) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
+        return is_string($text) && $text !== '' ? [] : ["Unable to parse '{$text}' as '{$this}'"];
     }
 
     /**
