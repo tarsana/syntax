@@ -110,7 +110,7 @@ class ArraySyntax extends Syntax {
         if (0 == count($errors)) 
             return [];
 
-        return array_merge($errors, ["Unable to dump '{$text}' as '{$this}'"]);
+        return array_merge($errors, ["Unable to dump as '{$this}'"]);
     }
 
     /**

@@ -1,6 +1,7 @@
 # Tarsana Syntax
 
 [![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
+[![Coverage Status](https://coveralls.io/repos/github/tarsana/syntax/badge.svg?branch=master)](https://coveralls.io/github/tarsana/syntax?branch=master)
 [![License](https://poser.pugx.org/laravel/framework/license.svg)](http://opensource.org/licenses/MIT)
 
 A tool to encode and decode strings based on flexible and composable syntax definitions.
