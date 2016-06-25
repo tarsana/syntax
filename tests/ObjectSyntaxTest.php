@@ -22,6 +22,16 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($object, $syntax->parse('Foo:76:no:Bar,Baz'));
     }
 
+    public function testToString() {
+        $syntax = S::obj([
+            'name' => S::string(),
+            'age' => S::number(),
+            'is_programmer' => S::boolean(),
+            'friends' => S::arr()
+        ]);
+        $this->assertEquals("object {name: (string), age: (number), is_programmer: (boolean), friends: (array of (string) separated by ',')} separated by ':'", "{$syntax}");
+    }
+
     public function testParseCustomSeparator() {
         $syntax = S::obj([
             'name' => S::string(),

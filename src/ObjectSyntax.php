@@ -51,7 +51,7 @@ class ObjectSyntax extends Syntax {
             $fields[] = "{$name}: ({$syntax})";
         }
         $fields = implode(', ', $fields);
-        return "object {{$fields}} separated by {$this->separator}";
+        return "object {{$fields}} separated by '{$this->separator}'";
     }
 
     /**
