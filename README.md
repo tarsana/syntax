@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
 [![Coverage Status](https://coveralls.io/repos/github/tarsana/syntax/badge.svg?branch=master)](https://coveralls.io/github/tarsana/syntax?branch=master)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb/small.png)](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb/mini.png)](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb)
 [![License](https://poser.pugx.org/laravel/framework/license.svg)](http://opensource.org/licenses/MIT)
 
 A tool to encode and decode strings based on flexible and composable syntax definitions.
