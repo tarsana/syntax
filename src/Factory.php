@@ -8,28 +8,28 @@ use Tarsana\Syntax\ArraySyntax;
 
 class Factory {
 
-    public static function string($default = null)
+    public static function string($default = null, $description = '')
     {
-        return new StringSyntax($default);
+        return new StringSyntax($default, $description);
     }
 
-    public static function boolean($default = null)
+    public static function boolean($default = null, $description = '')
     {
-        return new BooleanSyntax($default);
+        return new BooleanSyntax($default, $description);
     }
 
-    public static function number($default = null)
+    public static function number($default = null, $description = '')
     {
-        return new NumberSyntax($default);
+        return new NumberSyntax($default, $description);
     }
     
-    public static function arr($syntax = null, $separator = null, $default = null)
+    public static function arr($syntax = null, $separator = null, $default = null, $description = '')
     {
-        return new ArraySyntax($syntax, $separator, $default);
+        return new ArraySyntax($syntax, $separator, $default, $description);
     }
     
-    public static function obj($separator = null, $default = null)
+    public static function obj($fields, $separator = null, $default = null, $description = '')
     {
-        return new ObjectSyntax($separator, $default);
+        return new ObjectSyntax($fields, $separator, $default, $description);
     }
 }

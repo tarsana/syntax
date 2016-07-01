@@ -9,6 +9,13 @@ use Tarsana\Syntax\Exceptions\ParseException;
 abstract class Syntax {
 
     /**
+     * The description.
+     * 
+     * @var string
+     */
+    protected $description;
+
+    /**
      * The default value.
      * 
      * @var mixed
@@ -20,9 +27,10 @@ abstract class Syntax {
      * 
      * @param mixed $default
      */
-    public function __construct($default = null)
+    public function __construct($default = null, $description = '')
     {
         $this->default = $default;
+        $this->description = $description;
     }
 
     /**
@@ -33,6 +41,21 @@ abstract class Syntax {
     public function getDefault()
     {
         return $this->default;
+    }
+
+    /**
+     * Description getter and setter.
+     * 
+     * @param  string $value
+     * @return mixed
+     */
+    public function description($value = null)
+    {
+        if (null === $value) {
+            return $this->description;
+        }
+        $this->description = $value;
+        return $this;
     }
 
     /**

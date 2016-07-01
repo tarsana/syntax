@@ -26,7 +26,7 @@ class ObjectSyntax extends Syntax {
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
      */
-    public function __construct($fields, $separator = null, $default = null)
+    public function __construct($fields, $separator = null, $default = null, $description = '')
     {
         if ($separator === null ||  $separator == '')
             $separator = ':';
@@ -34,7 +34,7 @@ class ObjectSyntax extends Syntax {
         $this->fields = $fields;
         $this->separator = $separator;
 
-        parent::__construct($default);
+        parent::__construct($default, $description);
     }
 
     /**

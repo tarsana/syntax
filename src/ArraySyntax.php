@@ -26,7 +26,7 @@ class ArraySyntax extends Syntax {
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
      */
-    public function __construct($syntax = null, $separator = null, $default = null)
+    public function __construct($syntax = null, $separator = null, $default = null, $description = '')
     {
         if($syntax === null)
             $syntax = Factory::string();
@@ -36,7 +36,7 @@ class ArraySyntax extends Syntax {
         $this->itemSyntax = $syntax;
         $this->separator = $separator;
 
-        parent::__construct($default);
+        parent::__construct($default, $description);
     }
 
     /**
