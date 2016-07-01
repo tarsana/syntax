@@ -28,7 +28,7 @@ class ArraySyntax extends Syntax {
      */
     public function __construct($syntax = null, $separator = null, $default = null)
     {
-        if($syntax == null)
+        if($syntax === null)
             $syntax = Factory::string();
         if ($separator === null || $separator == '')
             $separator = ',';

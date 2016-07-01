@@ -1,7 +1,5 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\Exceptions\DumpException;
-
 /**
  * Represents an array of values with the same syntax.
  */
@@ -121,7 +119,6 @@ class ObjectSyntax extends Syntax {
         $result = new \stdClass;
         $items = explode($this->separator, $text);
         $index = 0;
-        $size = count($items);
         foreach ($this->fields as $name => $syntax) {
             if(isset($items[$index]) && 0 == count($syntax->checkParse($items[$index]))) {
                 $result->{$name} = $syntax->doParse($items[$index]);

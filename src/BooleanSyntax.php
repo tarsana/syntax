@@ -1,8 +1,5 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\Exceptions\DumpException;
-use Tarsana\Syntax\Exceptions\ParseException;
-
 /**
  * Represents a boolean.
  */
