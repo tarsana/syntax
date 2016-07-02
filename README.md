@@ -378,6 +378,10 @@ To write your own custom syntax class, you just need to inherit from [`Syntax`](
 
   - Some small bugs of `ArraySyntax` and `ObjectSyntax` fixed.
 
+- **version 1.1.0**: 
+
+  - `description` attribut added to `Syntax` to hold additional details.
+
 # Contributing
 
 Please take a look at the code and see how other syntax classes are done and tested before fixing or creating a syntax. All feedbacks and pull requests are welcome :D
