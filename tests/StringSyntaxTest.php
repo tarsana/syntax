@@ -18,6 +18,16 @@ class StringSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('default value', $syntax->parse(''));
     }
 
+    public function testParseWithDefaultAndDescription() {
+        $syntax = S::string('default value', 'demo');
+        $input = 'Lorem ?~\| ipsum/,: dolor .';
+        $this->assertEquals($input, $syntax->parse($input));
+        $this->assertEquals('default value', $syntax->parse(''));
+        $this->assertEquals('demo', $syntax->description());
+        $syntax->description('changed');
+        $this->assertEquals('changed', $syntax->description());
+    }
+
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
