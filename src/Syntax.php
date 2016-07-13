@@ -69,6 +69,28 @@ abstract class Syntax {
     }
 
     /**
+     * Tells if a text can be parsed using this syntax.
+     * 
+     * @param  string $text 
+     * @return bool 
+     */
+    public function canParse($text)
+    {
+        return 0 == count($this->checkParse($text));
+    }
+
+    /**
+     * Tells if a value can be dumped using this syntax.
+     * 
+     * @param  mixed $value
+     * @return bool 
+     */
+    public function canDump($value)
+    {
+        return 0 == count($this->checkDump($value));
+    }
+    
+    /**
      * Checks and converts a string to data using the syntax.
      * if the string can't be parsed; the default value is
      * returned if defined or a ParseException is thrown.
