@@ -38,6 +38,36 @@ class ObjectSyntax extends Syntax {
     }
 
     /**
+     * Separator getter and setter.
+     * 
+     * @param  string $value
+     * @return mixed
+     */
+    public function separator($value = null)
+    {
+        if (null === $value) {
+            return $this->separator;
+        }
+        $this->separator = $value;
+        return $this;
+    }
+
+    /**
+     * Fields getter and setter.
+     * 
+     * @param  array $value
+     * @return mixed
+     */
+    public function fields($value = null)
+    {
+        if (null === $value) {
+            return $this->fields;
+        }
+        $this->fields = $value;
+        return $this;
+    }
+
+    /**
      * Returns the string representation of the syntax.
      * 
      * @return string

@@ -1,5 +1,7 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\Syntax;
+
 /**
  * Represents an array of values with the same syntax.
  */
@@ -37,6 +39,36 @@ class ArraySyntax extends Syntax {
         $this->separator = $separator;
 
         parent::__construct($default, $description);
+    }
+
+    /**
+     * Item syntax getter and setter.
+     * 
+     * @param  Tarsana\Syntax\Syntax $value
+     * @return mixed
+     */
+    public function itemSyntax(Syntax $value = null)
+    {
+        if (null === $value) {
+            return $this->itemSyntax;
+        }
+        $this->itemSyntax = $value;
+        return $this;
+    }
+
+    /**
+     * Separator getter and setter.
+     * 
+     * @param  string $value
+     * @return mixed
+     */
+    public function separator($value = null)
+    {
+        if (null === $value) {
+            return $this->separator;
+        }
+        $this->separator = $value;
+        return $this;
     }
 
     /**

@@ -2,9 +2,6 @@
     "name": "tarsana/syntax",
     "description": "A tool to encode and decode strings based on flexible and composable syntax definitions.",
     "type": "library",
-    "require-dev": {
-        "phpunit/phpunit": "~4.0"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -16,5 +13,17 @@
         "psr-4": {
             "Tarsana\\Syntax\\": "src/"
         }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/matteosister/php-curry"
+        }
+    ],
+    "require": {
+        "tarsana/functional": "^1.2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
     }
 }
