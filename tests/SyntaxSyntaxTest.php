@@ -9,7 +9,7 @@ use Tarsana\Syntax\SyntaxSyntax;
 use Tarsana\Syntax\Factory as S;
 
 class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
-    
+
     public function test_parse() {
         $ss = new SyntaxSyntax;
 
@@ -48,8 +48,16 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('person', $s->description());
         $this->assertTrue($s instanceof ObjectSyntax);
         $this->assertEquals(
-            (object) ['name' => 'Foo', 'age' => 12, 'friends' => ['Bar', 'Baz']], 
+            (object) ['name' => 'Foo', 'age' => 12, 'friends' => ['Bar', 'Baz']],
             $s->parse('Foo:12:Bar,Baz')
+        );
+
+        $s = $ss->parse('{name}');
+        $this->assertEquals('', $s->description());
+        $this->assertTrue($s instanceof ObjectSyntax);
+        $this->assertEquals(
+            (object) ['name' => 'me'],
+            $s->parse('me')
         );
 
     }
@@ -60,19 +68,19 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('name', $ss->dump(S::string()->description('name')));
         $this->assertEquals('', $ss->dump(S::string()->description('')));
         $this->assertEquals('is-valid?', $ss->dump(S::boolean()->description('is-valid')));
-        $this->assertEquals('#number_of_numbers', 
+        $this->assertEquals('#number_of_numbers',
             $ss->dump(S::number()->description('number_of_numbers')
         ));
         $this->assertEquals(
-            'names[,]', 
+            'names[,]',
             $ss->dump(S::arr(S::string(), ',')->description('names'))
         );
         $this->assertEquals(
-            '#names[|]', 
+            '#names[|]',
             $ss->dump(S::arr(S::number(), '|')->description('names'))
         );
         $this->assertEquals(
-            'person{:,name,#age,friends[,]}', 
+            'person{:,name,#age,friends[,]}',
             $ss->dump(S::obj([
                 'name' => S::string(),
                 'age' => S::number(),

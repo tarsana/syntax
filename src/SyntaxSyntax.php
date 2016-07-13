@@ -96,7 +96,7 @@ class SyntaxSyntax extends Syntax {
     protected function isObject ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,]+),(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return false;
         $fields = [];
@@ -112,7 +112,7 @@ class SyntaxSyntax extends Syntax {
     protected function parseObject ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,]+),(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return null;
         $fields = [];
@@ -124,7 +124,11 @@ class SyntaxSyntax extends Syntax {
             return $results;
         }, [], $fields[0]);
 
-        return S::obj($fields, $results[2][0], null, $results[1][0]);
+        $separator = $results[2][0];
+        if(empty($separator))
+            $separator = ' ';
+
+        return S::obj($fields, $separator, null, $results[1][0]);
     }
 
     /**
