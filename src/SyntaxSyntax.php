@@ -32,11 +32,14 @@ class SyntaxSyntax extends Syntax {
      */
     public function checkParse($text)
     {
-        if($this->isString($text)
-            || $this->isNumber($text)
-            || $this->isBoolean($text)
-            || $this->isArray($text)
-            || $this->isObject($text))
+        $txt = $text;
+        if(F\head($txt) == '[' && F\last($txt) == ']')
+            $txt = F\init(F\tail($txt));
+        if($this->isString($txt)
+            || $this->isNumber($txt)
+            || $this->isBoolean($txt)
+            || $this->isArray($txt)
+            || $this->isObject($txt))
             return [];
         return ["Unable to parse '{$text}' as syntax"];
     }
@@ -48,7 +51,12 @@ class SyntaxSyntax extends Syntax {
 
     protected function parseString ($text)
     {
-        return S::string(null, $text);
+        $default = null;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $text = F\tail(F\init($text));
+            $default = '';
+        }
+        return S::string($default, $text);
     }
 
     protected function isNumber ($text)
@@ -58,7 +66,12 @@ class SyntaxSyntax extends Syntax {
 
     protected function parseNumber ($text)
     {
-        return S::number(null, F\tail($text));
+        $default = null;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $text = F\init(F\tail($text));
+            $default = '';
+        }
+        return S::number($default, F\tail($text));
     }
 
     protected function isBoolean ($text)
@@ -68,7 +81,12 @@ class SyntaxSyntax extends Syntax {
 
     protected function parseBoolean ($text)
     {
-        return S::boolean(null, F\init($text));
+        $default = null;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $text = F\init(F\tail($text));
+            $default = '';
+        }
+        return S::boolean($default, F\init($text));
     }
 
     protected function isArray ($text)
@@ -82,6 +100,11 @@ class SyntaxSyntax extends Syntax {
 
     protected function parseArray ($text)
     {
+        $default = null;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $text = F\init(F\tail($text));
+            $default = '';
+        }
         $results = [];
         $count = preg_match_all('/^([^\[]*)\[(.*)\]$/', $text, $results);
         if ($count < 1)
@@ -90,20 +113,25 @@ class SyntaxSyntax extends Syntax {
         $separator = $results[2][0];
         if (empty($separator))
             $separator = ',';
-        return S::arr($type, $separator, null, $type->description());
+        return S::arr($type, $separator, $default, $type->description());
     }
 
     protected function isObject ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9]+)?,?(.+)\}$/', $text, $results);
-        if ($count < 1)
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
+        if ($count < 1) {
             return false;
+        }
         $fields = [];
         preg_match_all('/[^,]+/', $results[3][0], $fields);
         $fields = $fields[0];
         foreach ($fields as $field) {
-            if (0 < count($this->checkParse(trim($field))))
+            $field = trim($field);
+            if(F\head($field) == '[' && F\last($field) == ']') {
+                $field = F\init(F\tail(trim($field)));
+            }
+            if (! $this->canParse($field))
                 return false;
         }
         return true;
@@ -111,8 +139,13 @@ class SyntaxSyntax extends Syntax {
 
     protected function parseObject ($text)
     {
+        $default = null;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $text = F\init(F\tail($text));
+            $default = '';
+        }
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9]+)?,?(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return null;
         $fields = [];
@@ -128,7 +161,7 @@ class SyntaxSyntax extends Syntax {
         if(empty($separator))
             $separator = ' ';
 
-        return S::obj($fields, $separator, null, $results[1][0]);
+        return S::obj($fields, $separator, $default, $results[1][0]);
     }
 
     /**
@@ -139,15 +172,19 @@ class SyntaxSyntax extends Syntax {
      */
     protected function doParse($text)
     {
-        if ($this->isObject($text))
+        $txt = $text;
+        if(F\head($text) == '[' && F\last($text) == ']') {
+            $txt = F\init(F\tail($text));
+        }
+        if ($this->isObject($txt))
             return $this->parseObject($text);
-        if ($this->isArray($text))
+        if ($this->isArray($txt))
             return $this->parseArray($text);
-        if ($this->isNumber($text))
+        if ($this->isNumber($txt))
             return $this->parseNumber($text);
-        if ($this->isBoolean($text))
+        if ($this->isBoolean($txt))
             return $this->parseBoolean($text);
-        if ($this->isString($text))
+        if ($this->isString($txt))
             return $this->parseString($text);
         return null;
     }
@@ -178,20 +215,22 @@ class SyntaxSyntax extends Syntax {
      */
     protected function doDump($value)
     {
+        $result = '';
+
         if ($value instanceof StringSyntax)
-            return F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-        if ($value instanceof NumberSyntax)
-            return '#' . F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-        if ($value instanceof BooleanSyntax)
-            return F\regReplace('/[^a-zA-Z-_]+/', '', $value->description()) . '?';
-        if ($value instanceof ArraySyntax) {
+            $result = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
+        else if ($value instanceof NumberSyntax)
+            $result = '#' . F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
+        else if ($value instanceof BooleanSyntax)
+            $result = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description()) . '?';
+        else if ($value instanceof ArraySyntax) {
             $item = $value->itemSyntax();
             $oldDescription = $item->description();
             $text = $this->dump($item->description($value->description()));
             $item->description($oldDescription);
-            return "{$text}[{$value->separator()}]";
+            $result = "{$text}[{$value->separator()}]";
         }
-        if ($value instanceof ObjectSyntax) {
+        else if ($value instanceof ObjectSyntax) {
             $fields = [];
             foreach ($value->fields() as $name => $item) {
                 $oldDescription = $item->description();
@@ -201,7 +240,12 @@ class SyntaxSyntax extends Syntax {
             }
             $fields = F\join(',', $fields);
             $name = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-            return "{$name}{{$value->separator()},{$fields}}";
+            $result = "{$name}{{$value->separator()},{$fields}}";
         }
+
+        if (! $value->isRequired())
+            $result = "[{$result}]";
+
+        return $result;
     }
 }
