@@ -14,6 +14,8 @@ use Tarsana\Syntax\Factory as S;
  */
 class SyntaxSyntax extends Syntax {
 
+    protected $
+
     /**
      * Returns the string representation of the syntax.
      *
