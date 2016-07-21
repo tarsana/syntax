@@ -92,7 +92,7 @@ class SyntaxSyntax extends Syntax {
     protected function isArray ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([^\[]*)\[(.*)\]$/', $text, $results);
+        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
         if ($count < 1)
             return false;
         return 0 == count($this->checkParse($results[1][0]));
@@ -106,7 +106,7 @@ class SyntaxSyntax extends Syntax {
             $default = '';
         }
         $results = [];
-        $count = preg_match_all('/^([^\[]*)\[(.*)\]$/', $text, $results);
+        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
         if ($count < 1)
             return null;
         $type = $this->doParse($results[1][0]);
@@ -123,9 +123,10 @@ class SyntaxSyntax extends Syntax {
         if ($count < 1) {
             return false;
         }
-        $fields = [];
-        preg_match_all('/[^,]+/', $results[3][0], $fields);
-        $fields = $fields[0];
+        $fields = F\chunks(
+            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
+            ',', $results[3][0]
+        );
         foreach ($fields as $field) {
             $field = trim($field);
             if(F\head($field) == '[' && F\last($field) == ']') {
@@ -148,14 +149,15 @@ class SyntaxSyntax extends Syntax {
         $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return null;
-        $fields = [];
-        preg_match_all('/[^,]+/', $results[3][0], $fields);
-
+        $fields = F\chunks(
+            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
+            ',', $results[3][0]
+        );
         $fields = F\reduce(function($results, $item){
             $item = $this->doParse(trim($item));
             $results[$item->description()] = $item;
             return $results;
-        }, [], $fields[0]);
+        }, [], $fields);
 
         $separator = $results[2][0];
         if(empty($separator))
