@@ -31,51 +31,51 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_parse_string() {
-        $this->checkParse('name', StringSyntax::class, 'name', true);
-        $this->checkParse('', StringSyntax::class, '', true);
-        $this->checkParse('[name]', StringSyntax::class, 'name', false);
+        $this->checkParse('name', 'Tarsana\Syntax\StringSyntax', 'name', true);
+        $this->checkParse('', 'Tarsana\Syntax\StringSyntax', '', true);
+        $this->checkParse('[name]', 'Tarsana\Syntax\StringSyntax', 'name', false);
     }
 
     public function test_parse_number() {
-        $this->checkParse('#my_number', NumberSyntax::class, 'my_number', true);
-        $this->checkParse('[#my_number]', NumberSyntax::class, 'my_number', false);
+        $this->checkParse('#my_number', 'Tarsana\Syntax\NumberSyntax', 'my_number', true);
+        $this->checkParse('[#my_number]', 'Tarsana\Syntax\NumberSyntax', 'my_number', false);
     }
 
     public function test_parse_boolean() {
-        $this->checkParse('is-valid?', BooleanSyntax::class, 'is-valid', true);
-        $this->checkParse('[is-valid?]', BooleanSyntax::class, 'is-valid', false);
+        $this->checkParse('is-valid?', 'Tarsana\Syntax\BooleanSyntax', 'is-valid', true);
+        $this->checkParse('[is-valid?]', 'Tarsana\Syntax\BooleanSyntax', 'is-valid', false);
     }
 
     public function test_parse_simple_array() {
         // Array of strings with default separator
-        $s = $this->checkParse('names[]', ArraySyntax::class, 'names', true);
+        $s = $this->checkParse('names[]', 'Tarsana\Syntax\ArraySyntax', 'names', true);
         $this->assertEquals(['foo', ' bar', 'baz'], $s->parse('foo, bar,baz'));
 
         // Array of strings with custom separator
-        $s = $this->checkParse('names[|]', ArraySyntax::class, 'names', true);
+        $s = $this->checkParse('names[|]', 'Tarsana\Syntax\ArraySyntax', 'names', true);
         $this->assertEquals(['foo', ' bar', 'baz'], $s->parse('foo| bar|baz'));
 
         // Array of numbers with custom separator
-        $s = $this->checkParse('#numbers[|]', ArraySyntax::class, 'numbers', true);
+        $s = $this->checkParse('#numbers[|]', 'Tarsana\Syntax\ArraySyntax', 'numbers', true);
         $this->assertEquals([1, 3, 5], $s->parse('1|3|5'));
 
         // Array of booleans without description
-        $s = $this->checkParse('?[:]', ArraySyntax::class, '', true);
+        $s = $this->checkParse('?[:]', 'Tarsana\Syntax\ArraySyntax', '', true);
         $this->assertEquals([true, false, true], $s->parse('true:no:yes'));
 
         // Optional array of strings
-        $s = $this->checkParse('[names[]]', ArraySyntax::class, 'names', false);
+        $s = $this->checkParse('[names[]]', 'Tarsana\Syntax\ArraySyntax', 'names', false);
         $this->assertEquals(['foo', ' bar', 'baz'], $s->parse('foo, bar,baz'));
         $this->assertEquals('', $s->parse(''));
     }
 
     public function test_parse_array_of_arrays() {
-        $s = $this->checkParse('#matrix[,][ ]', ArraySyntax::class, 'matrix', true);
+        $s = $this->checkParse('#matrix[,][ ]', 'Tarsana\Syntax\ArraySyntax', 'matrix', true);
         $this->assertEquals([[1, 2], [3, 4]], $s->parse('1,2 3,4'));
     }
 
     public function test_parse_array_of_objects() {
-        $s = $this->checkParse('persons{name,#age}[]', ArraySyntax::class, 'persons', true);
+        $s = $this->checkParse('persons{name,#age}[]', 'Tarsana\Syntax\ArraySyntax', 'persons', true);
         $this->assertEquals([
             (object) ['name' => 'Foo', 'age' => 26],
             (object) ['name' => 'Bar', 'age' => 20]
@@ -84,13 +84,13 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
     public function test_parse_simple_object() {
         // Simple Object
-        $s = $this->checkParse('person{:,name, #age, vip?,friends[]}', ObjectSyntax::class, 'person', true);
+        $s = $this->checkParse('person{:,name, #age, vip?,friends[]}', 'Tarsana\Syntax\ObjectSyntax', 'person', true);
         $this->assertEquals(
             (object) ['name' => 'Foo', 'age' => 12, 'vip' => true, 'friends' => ['Bar', 'Baz']],
             $s->parse('Foo:12:true:Bar,Baz')
         );
         // Simple optional object
-        $s = $this->checkParse('[person{:,name,#age,friends[]}]', ObjectSyntax::class, 'person', false);
+        $s = $this->checkParse('[person{:,name,#age,friends[]}]', 'Tarsana\Syntax\ObjectSyntax', 'person', false);
         $this->assertEquals(
             (object) ['name' => 'Foo', 'age' => 12, 'friends' => ['Bar', 'Baz']],
             $s->parse('Foo:12:Bar,Baz')
@@ -100,7 +100,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
     public function test_parse_object_with_one_field() {
         // one required field
-        $s = $this->checkParse('{name}', ObjectSyntax::class, '', true);
+        $s = $this->checkParse('{name}', 'Tarsana\Syntax\ObjectSyntax', '', true);
         $this->assertEquals(
             (object) ['name' => 'me'],
             $s->parse('me')
@@ -110,14 +110,14 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
     public function test_parse_object_with_optional_fields() {
         // one field and it's optional
         // if all fields are optional, then the object is optional ?
-        $s = $this->checkParse('{[name]}', ObjectSyntax::class, '', true);
+        $s = $this->checkParse('{[name]}', 'Tarsana\Syntax\ObjectSyntax', '', true);
         $this->assertEquals(
             (object) ['name' => ''],
             $s->parse('')
         );
         // one optional field among three
         // using ' ' as default separator
-        $s = $this->checkParse('person{name,[#age],friends[]}', ObjectSyntax::class, 'person', true);
+        $s = $this->checkParse('person{name,[#age],friends[]}', 'Tarsana\Syntax\ObjectSyntax', 'person', true);
         $this->assertEquals(
             (object) ['name' => 'Foo', 'age' => '', 'friends' => ['Bar', 'Baz']],
             $s->parse('Foo Bar,Baz')
@@ -125,7 +125,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_parse_object_containing_objects() {
-        $s = $this->checkParse('user{name,accounts{:,site,login,[pass]}[]}', ObjectSyntax::class, 'user', true);
+        $s = $this->checkParse('user{name,accounts{:,site,login,[pass]}[]}', 'Tarsana\Syntax\ObjectSyntax', 'user', true);
         $this->assertEquals((object) ['name' => 'Foo', 'accounts' => [
             (object) ['site' => 'fb', 'login' => 'foo', 'pass' => '***'],
             (object) ['site' => 'gh', 'login' => 'mefoo', 'pass' => '']
