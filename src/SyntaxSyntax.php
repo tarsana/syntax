@@ -85,7 +85,7 @@ class SyntaxSyntax extends Syntax {
         if (null === $value || $value == '') {
             return $this->fieldsSeparator;
         }
-        $this->fieldsSeparator = F\head(1, $value);
+        $this->fieldsSeparator = F\head($value);
         return $this;
     }
 

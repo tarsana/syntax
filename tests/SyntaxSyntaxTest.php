@@ -36,7 +36,19 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($text, self::$ss->dump($syntax));
     }
 
+    public function test_getters_and_setters()
+    {
+        $ss = (new SyntaxSyntax)
+            ->arraySeparator('/')
+            ->objectSeparator('*')
+            ->fieldsSeparator(' ');
+        $this->assertEquals('/', $ss->arraySeparator());
+        $this->assertEquals('*', $ss->objectSeparator());
+        $this->assertEquals(' ', $ss->fieldsSeparator());
+    }
+
     //----------------------------------------- String ---------------------------------------------------------
+
     public function test_parse_string()
     {
         $this->checkParse('name', 'Tarsana\Syntax\StringSyntax', 'name', true);
@@ -59,6 +71,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
 
     //----------------------------------------- Number ---------------------------------------------------------
+
     public function test_parse_number()
     {
         $this->checkParse('#my_number', 'Tarsana\Syntax\NumberSyntax', 'my_number', true);
@@ -77,6 +90,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
 
     //----------------------------------------- Boolean ---------------------------------------------------------
+
     public function test_parse_boolean()
     {
         $this->checkParse('is-valid?', 'Tarsana\Syntax\BooleanSyntax', 'is-valid', true);
@@ -95,6 +109,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
 
     //----------------------------------------- Array ---------------------------------------------------------
+
     public function test_parse_simple_array()
     {
         // Array of strings with default separator
@@ -159,7 +174,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals([
             (object) ['name' => 'Foo', 'age' => 26],
             (object) ['name' => 'Bar', 'age' => 20]
-        ], $s->parse('Foo 26,Bar 20'));
+        ], $s->parse('Foo:26,Bar:20'));
     }
 
     public function test_dump_array_of_objects()
@@ -173,8 +188,18 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         );
     }
 
+    public function test_custom_default_array_separator()
+    {
+        $s = (new SyntaxSyntax)->arraySeparator('|')->parse('names[]');
+        $this->assertTrue($s instanceof ArraySyntax);
+        $this->assertEquals('names', $s->description());
+        $this->assertTrue($s->isRequired());
+        $this->assertEquals(['foo', 'bar', 'baz'], $s->parse('foo|bar|baz'));
+    }
+
 
     //----------------------------------------- Object ---------------------------------------------------------
+
     public function test_parse_simple_object()
     {
         // Simple Object
@@ -247,7 +272,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $s = $this->checkParse('person{name,[#age],friends[]}', 'Tarsana\Syntax\ObjectSyntax', 'person', true);
         $this->assertEquals(
             (object) ['name' => 'Foo', 'age' => '', 'friends' => ['Bar', 'Baz']],
-            $s->parse('Foo Bar,Baz')
+            $s->parse('Foo:Bar,Baz')
         );
     }
 
@@ -271,12 +296,12 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
     public function test_parse_object_containing_objects()
     {
-        $s = $this->checkParse('user{name,accounts{:,site,login,[pass]}[]}', 'Tarsana\Syntax\ObjectSyntax', 'user', true);
+        $s = $this->checkParse('user{name,accounts{ ,site,login,[pass]}[]}', 'Tarsana\Syntax\ObjectSyntax', 'user', true);
         $this->assertEquals((object) ['name' => 'Foo', 'accounts' => [
             (object) ['site' => 'fb', 'login' => 'foo', 'pass' => '***'],
             (object) ['site' => 'gh', 'login' => 'mefoo', 'pass' => '']
             ]],
-            $s->parse('Foo fb:foo:***,gh:mefoo')
+            $s->parse('Foo:fb foo ***,gh mefoo')
         );
     }
 
@@ -294,4 +319,23 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
             ], ' ')->description('user')
         );
     }
+
+    public function test_custom_default_object_separator()
+    {
+        $s = (new SyntaxSyntax)->objectSeparator(' ')->parse('person{name,#age}');
+        $this->assertTrue($s instanceof ObjectSyntax);
+        $this->assertEquals('person', $s->description());
+        $this->assertTrue($s->isRequired());
+        $this->assertEquals((object)['name' => 'bar', 'age' => 11], $s->parse('bar 11'));
+    }
+
+    public function test_custom_object_fields_separator()
+    {
+        $s = (new SyntaxSyntax)->fieldsSeparator(' ')->parse('person{name #age}');
+        $this->assertTrue($s instanceof ObjectSyntax);
+        $this->assertEquals('person', $s->description());
+        $this->assertTrue($s->isRequired());
+        $this->assertEquals((object)['name' => 'bar', 'age' => 11], $s->parse('bar:11'));
+    }
+
 }
