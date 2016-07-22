@@ -22,13 +22,13 @@ class Factory {
     {
         return new NumberSyntax($default, $description);
     }
-    
+
     public static function arr($syntax = null, $separator = null, $default = null, $description = '')
     {
         return new ArraySyntax($syntax, $separator, $default, $description);
     }
-    
-    public static function obj($fields, $separator = null, $default = null, $description = '')
+
+    public static function obj($fields = [], $separator = null, $default = null, $description = '')
     {
         return new ObjectSyntax($fields, $separator, $default, $description);
     }

@@ -42,6 +42,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
             ->arraySeparator('/')
             ->objectSeparator('*')
             ->fieldsSeparator(' ');
+
         $this->assertEquals('/', $ss->arraySeparator());
         $this->assertEquals('*', $ss->objectSeparator());
         $this->assertEquals(' ', $ss->fieldsSeparator());
