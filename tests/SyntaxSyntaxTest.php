@@ -48,6 +48,12 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(' ', $ss->fieldsSeparator());
     }
 
+    public function test_error_case()
+    {
+        $this->assertFalse(self::$ss->canParse('foo{'));
+        $this->assertFalse(self::$ss->canDump(new SyntaxSyntax));
+    }
+
     //----------------------------------------- String ---------------------------------------------------------
 
     public function test_parse_string()
