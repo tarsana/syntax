@@ -6,7 +6,7 @@ use Tarsana\Syntax\Factory as S;
 /**
  * This syntax generates a Syntax from a string.
  * It supports the following Synatxes:
- *     - StringSyntax   [a-zA-Z_-]+
+ *     - StringSyntax   [a-zA-Z_-]*
  *     - NumberSyntax   #string
  *     - BooleanSyntax  string?
  *     - ArraySyntax    type[separator]

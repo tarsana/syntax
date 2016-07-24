@@ -6,9 +6,9 @@ The abstract class `Tarsana\Syntax\Syntax` defines the basic behavior of a synta
 
 ```php
 /**
- * Checks if the provided string can be parsed using the 
+ * Checks if the provided string can be parsed using the
  * syntax and returns an array of parsing errors if any.
- * 
+ *
  * @param  string $text
  * @return array
  */
@@ -22,7 +22,7 @@ The returned array is simply an array of strings. An empty array means that the 
 ```php
 /**
  * Transforms a string to data based on the syntax.
- * 
+ *
  * @param  string $text the string to parse
  * @return mixed
  */
@@ -35,9 +35,9 @@ This method assumes that `$text` has been already checked and can be parsed. It 
 
 ```php
 /**
- * Checks if the provided argument can be dumped using the 
+ * Checks if the provided argument can be dumped using the
  * syntax, and returns an array of dumping errors if any.
- * 
+ *
  * @param  mixed $value
  * @return array
  */
@@ -50,7 +50,7 @@ Similar to `checkParse()`.
 ```php
 /**
  * Converts the given parameter to a string based on the syntax.
- * 
+ *
  * @param  mixed $value the data to encode
  * @return string
  */
@@ -63,12 +63,38 @@ Similar to `doParse()`.
 ```php
 /**
  * Returns the string representation of the syntax.
- * 
+ *
  * @return string
  */
 abstract public function __toString();
 ```
 Used to generate errors. Should return a detailed description of the syntax.
+
+---
+
+The `Syntax` class provides the following methods:
+
+## Syntax::canParse()
+```php
+/**
+ * Tells if a text can be parsed using this syntax.
+ *
+ * @param  string $text
+ * @return bool
+ */
+public function canParse($text)
+```
+
+## Syntax::canDump()
+```php
+/**
+ * Tells if a value can be dumped using this syntax.
+ *
+ * @param  mixed $value
+ * @return bool
+ */
+public function canDump($value)
+```
 
 ## Syntax::parse()
 
@@ -77,10 +103,10 @@ Used to generate errors. Should return a detailed description of the syntax.
  * Checks and converts a string to data using the syntax.
  * if the string can't be parsed; the default value is
  * returned if defined or a ParseException is thrown.
- * 
+ *
  * @param  string $text the string to parse
  * @return mixed
- * 
+ *
  * @throws Tarsana\Syntax\Exceptions\ParseException
  */
 public function parse($text)
@@ -90,12 +116,12 @@ public function parse($text)
 
 ```php
 /**
- * Checks and converts the given parameter to a string based on the syntax, 
+ * Checks and converts the given parameter to a string based on the syntax,
  * or throws a DumpException if the value can't be dumped
- * 
+ *
  * @param  mixed $value the data to encode
  * @return string
- * 
+ *
  * @throws Tarsana\Syntax\Exceptions\DumpException
  */
 public function dump($value)

@@ -10,21 +10,9 @@ use Tarsana\Syntax\BooleanSyntax;
 
 class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
-    protected static $ss;
-
-    public static function setUpBeforeClass()
-    {
-        self::$ss = new SyntaxSyntax;
-    }
-
-    public static function tearDownAfterClass()
-    {
-        self::$ss = null;
-    }
-
     protected function checkParse($text, $class, $description, $isRequired)
     {
-        $s = self::$ss->parse($text);
+        $s = S::fromString($text);
         $this->assertTrue($s instanceof $class);
         $this->assertEquals($description, $s->description());
         $this->assertEquals($isRequired, $s->isRequired());
@@ -33,7 +21,7 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
     protected function checkDump($text, $syntax)
     {
-        $this->assertEquals($text, self::$ss->dump($syntax));
+        $this->assertEquals($text, S::syntax()->dump($syntax));
     }
 
     public function test_getters_and_setters()
@@ -50,8 +38,8 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
 
     public function test_error_case()
     {
-        $this->assertFalse(self::$ss->canParse('foo{'));
-        $this->assertFalse(self::$ss->canDump(new SyntaxSyntax));
+        $this->assertFalse(S::syntax()->canParse('foo{'));
+        $this->assertFalse(S::syntax()->canDump(new SyntaxSyntax));
     }
 
     //----------------------------------------- String ---------------------------------------------------------

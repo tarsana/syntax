@@ -1,10 +1,11 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\ArraySyntax;
 use Tarsana\Syntax\BooleanSyntax;
 use Tarsana\Syntax\NumberSyntax;
 use Tarsana\Syntax\ObjectSyntax;
 use Tarsana\Syntax\StringSyntax;
-use Tarsana\Syntax\ArraySyntax;
+use Tarsana\Syntax\SyntaxSyntax;
 
 class Factory {
 
@@ -31,5 +32,15 @@ class Factory {
     public static function obj($fields = [], $separator = null, $default = null, $description = '')
     {
         return new ObjectSyntax($fields, $separator, $default, $description);
+    }
+
+    public static function syntax($default = null, $description = '')
+    {
+        return new SyntaxSyntax($default, $description);
+    }
+
+    public static function fromString($text)
+    {
+        return (new SyntaxSyntax)->parse($text);
     }
 }
