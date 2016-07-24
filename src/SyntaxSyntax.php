@@ -6,13 +6,88 @@ use Tarsana\Syntax\Factory as S;
 /**
  * This syntax generates a Syntax from a string.
  * It supports the following Synatxes:
- *     - StringSyntax   [a-zA-Z_-]+
+ *     - StringSyntax   [a-zA-Z_-]*
  *     - NumberSyntax   #string
  *     - BooleanSyntax  string?
  *     - ArraySyntax    type[separator]
  *     - ObjectSyntax   string{separator,field1,field2,...}
  */
 class SyntaxSyntax extends Syntax {
+
+    /**
+     * The default array separator.
+     * @var string
+     */
+    protected $arraySeparator;
+
+    /**
+     * The default object separator.
+     * @var string
+     */
+    protected $objectSeparator;
+
+    /**
+     * The object fields separator.
+     * @var string
+     */
+    protected $fieldsSeparator;
+
+    /**
+     * Creates a new SyntaxSyntax instance.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->arraySeparator(',')
+            ->objectSeparator(':')
+            ->fieldsSeparator(',');
+    }
+
+    /**
+     * arraySeparator getter and setter.
+     *
+     * @param  string
+     * @return mixed
+     */
+    public function arraySeparator($value = null)
+    {
+        if (null === $value) {
+            return $this->arraySeparator;
+        }
+        $this->arraySeparator = $value;
+        return $this;
+    }
+
+    /**
+     * objectSeparator getter and setter.
+     *
+     * @param  string
+     * @return mixed
+     */
+    public function objectSeparator($value = null)
+    {
+        if (null === $value) {
+            return $this->objectSeparator;
+        }
+        $this->objectSeparator = $value;
+        return $this;
+    }
+
+    /**
+     * fieldsSeparator getter and setter.
+     *
+     * @param  string
+     * @return mixed
+     */
+    public function fieldsSeparator($value = null)
+    {
+        if (null === $value || $value == '') {
+            return $this->fieldsSeparator;
+        }
+        $this->fieldsSeparator = F\head($value);
+        return $this;
+    }
 
     /**
      * Returns the string representation of the syntax.
@@ -92,7 +167,7 @@ class SyntaxSyntax extends Syntax {
     protected function isArray ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([^\[]*)\[(.*)\]$/', $text, $results);
+        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
         if ($count < 1)
             return false;
         return 0 == count($this->checkParse($results[1][0]));
@@ -106,26 +181,27 @@ class SyntaxSyntax extends Syntax {
             $default = '';
         }
         $results = [];
-        $count = preg_match_all('/^([^\[]*)\[(.*)\]$/', $text, $results);
+        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
         if ($count < 1)
             return null;
         $type = $this->doParse($results[1][0]);
         $separator = $results[2][0];
         if (empty($separator))
-            $separator = ',';
+            $separator = $this->arraySeparator;
         return S::arr($type, $separator, $default, $type->description());
     }
 
     protected function isObject ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^'.$this->fieldsSeparator.'a-zA-Z0-9\[]+)?'.$this->fieldsSeparator.'?(.+)\}$/', $text, $results);
         if ($count < 1) {
             return false;
         }
-        $fields = [];
-        preg_match_all('/[^,]+/', $results[3][0], $fields);
-        $fields = $fields[0];
+        $fields = F\chunks(
+            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
+            $this->fieldsSeparator, $results[3][0]
+        );
         foreach ($fields as $field) {
             $field = trim($field);
             if(F\head($field) == '[' && F\last($field) == ']') {
@@ -148,18 +224,19 @@ class SyntaxSyntax extends Syntax {
         $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return null;
-        $fields = [];
-        preg_match_all('/[^,]+/', $results[3][0], $fields);
-
+        $fields = F\chunks(
+            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
+            $this->fieldsSeparator, $results[3][0]
+        );
         $fields = F\reduce(function($results, $item){
             $item = $this->doParse(trim($item));
             $results[$item->description()] = $item;
             return $results;
-        }, [], $fields[0]);
+        }, [], $fields);
 
         $separator = $results[2][0];
         if(empty($separator))
-            $separator = ' ';
+            $separator = $this->objectSeparator;
 
         return S::obj($fields, $separator, $default, $results[1][0]);
     }
@@ -238,9 +315,9 @@ class SyntaxSyntax extends Syntax {
                 $fields[] = $this->dump($item);
                 $item->description($oldDescription);
             }
-            $fields = F\join(',', $fields);
+            $fields = F\join($this->fieldsSeparator, $fields);
             $name = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-            $result = "{$name}{{$value->separator()},{$fields}}";
+            $result = "{$name}{{$value->separator()}{$this->fieldsSeparator}{$fields}}";
         }
 
         if (! $value->isRequired())

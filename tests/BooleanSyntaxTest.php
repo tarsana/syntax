@@ -3,8 +3,8 @@
 use Tarsana\Syntax\Factory as S;
 
 class BooleanSyntaxTest extends PHPUnit_Framework_TestCase {
-    
-    public function testParse() {
+
+    public function test_parse() {
         $syntax = S::boolean();
         $trueInputs = ['true', 'yes', 'TRue', 'yeS', 'Y'];
         $falseInputs = ['false', 'no', 'No', 'N'];
@@ -19,12 +19,12 @@ class BooleanSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseWrongBoolean() {
+    public function test_parse_wrong_boolean() {
         $syntax = S::boolean();
         $syntax->parse('wrong boolean');
     }
 
-    public function testDump() {
+    public function test_dump() {
         $syntax = S::boolean();
         $this->assertEquals('true', $syntax->dump(true));
         $this->assertEquals('false', $syntax->dump(false));
@@ -33,8 +33,9 @@ class BooleanSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\DumpException
      */
-    public function testDumpWrongBoolean() {
+    public function test_dump_wrong_boolean() {
         $syntax = S::boolean();
+        $this->assertFalse($syntax->canDump('boolean'));
         $syntax->dump('boolean');
     }
 

@@ -3,8 +3,8 @@
 use Tarsana\Syntax\Factory as S;
 
 class NumberSyntaxTest extends PHPUnit_Framework_TestCase {
-    
-    public function testParse() {
+
+    public function test_parse() {
         $syntax = S::number();
 
         $this->assertTrue(12 === $syntax->parse('12'));
@@ -15,12 +15,12 @@ class NumberSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseWrongNumber() {
+    public function test_parse_wrong_number() {
         $syntax = S::number();
         $syntax->parse('t56');
     }
 
-    public function testDump() {
+    public function test_dump() {
         $syntax = S::number();
         $this->assertTrue('12' === $syntax->dump(12));
         $this->assertTrue('0.23' === $syntax->dump(0.23));
@@ -30,8 +30,9 @@ class NumberSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\DumpException
      */
-    public function testDumpWrongBoolean() {
+    public function test_dump_wrong_boolean() {
         $syntax = S::number();
+        $this->assertFalse($syntax->canDump('nan'));
         $syntax->dump('nan');
     }
 

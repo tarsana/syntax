@@ -1,10 +1,28 @@
 <?php
 
+use Tarsana\Syntax\StringSyntax;
+use Tarsana\Syntax\NumberSyntax;
 use Tarsana\Syntax\Factory as S;
 
 class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
-    
-    public function testParse() {
+
+    public function test_getters_and_setters()
+    {
+        $syntax = S::obj()
+            ->separator('|')
+            ->fields([
+                'name' => S::string(),
+                 'age' => S::number()
+            ]);
+
+        $fields = $syntax->fields();
+        $this->assertEquals('|', $syntax->separator());
+        $this->assertEquals(2, count($fields));
+        $this->assertTrue($fields['name'] instanceof StringSyntax);
+        $this->assertTrue( $fields['age'] instanceof NumberSyntax);
+    }
+
+    public function test_parse() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -22,7 +40,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($object, $syntax->parse('Foo:76:no:Bar,Baz'));
     }
 
-    public function testToString() {
+    public function test_to_string() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -32,7 +50,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("object {name: (string), age: (number), is_programmer: (boolean), friends: (array of (string) separated by ',')} separated by ':'", "{$syntax}");
     }
 
-    public function testParseCustomSeparator() {
+    public function test_parse_custom_separator() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -50,7 +68,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($object, $syntax->parse('Foo|76|false|Bar,Baz'));
     }
 
-    public function testParseWithOptionalFields() {
+    public function test_parse_with_optional_fields() {
         $syntax = S::obj([
             'name' => S::string(),
             'is_programmer' => S::boolean(false),
@@ -75,7 +93,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($object, $syntax->parse('Foo:yes:76'));
     }
 
-    public function testParseComplexObject() {
+    public function test_parse_complex_object() {
         $test = $this->getComplexTestCase();
 
         $this->assertEquals($test['object'], $test['syntax']->parse($test['text']));
@@ -84,7 +102,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseMissingFields() {
+    public function test_parse_missing_fields() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -97,7 +115,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseMissingRequiredFields() {
+    public function test_parse_missing_required_fields() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(23),
@@ -110,7 +128,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseTooMuchItems() {
+    public function test_parse_too_much_items() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -123,7 +141,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseWrongRequiredField() {
+    public function test_parse_wrong_required_field() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -136,7 +154,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseMissingRequiredFieldsAtTheEnd() {
+    public function test_parse_missing_required_fields_at_the_end() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(23),
@@ -146,7 +164,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $syntax->parse('Foo:29:yes');
     }
 
-    public function testDump() {
+    public function test_dump() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -164,7 +182,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Foo:76:false:Bar,Baz', $syntax->dump($object));
     }
 
-    public function testDumpComplexObject() {
+    public function test_dump_complex_object() {
         $test = $this->getComplexTestCase();
 
         $this->assertEquals($test['full_text'], $test['syntax']->dump($test['object']));
@@ -173,7 +191,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\DumpException
      */
-    public function testDumpMissingField() {
+    public function test_dump_missing_field() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -193,7 +211,7 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\DumpException
      */
-    public function testDumpWrongField() {
+    public function test_dump_wrong_field() {
         $syntax = S::obj([
             'name' => S::string(),
             'age' => S::number(),
@@ -208,21 +226,22 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
             'friends' => ['Bar', 'Baz']
         ];
 
+        $this->assertFalse($syntax->canDump($object));
         $syntax->dump($object);
     }
 
     protected function getComplexTestCase() {
 
         $text = "Student Agent Smart,Stupid\n" .
-                "name:string:public age:int year:int:protected,get:1 ". 
+                "name:string:public age:int year:int:protected,get:1 ".
                 "count:int:static,protected,get:0\n" .
                 'speak:void canLearn:bool:s|Subject|"math":protected';
 
         $fullText = "Student Agent Smart,Stupid\n" .
-                "name:string:public: age:int:private,get,set: year:int:protected,get:1 ". 
+                "name:string:public: age:int:private,get,set: year:int:protected,get:1 ".
                 "count:int:static,protected,get:0\n" .
                 'speak:void::public canLearn:bool:s|Subject|"math":protected';
-        
+
         $syntax = S::obj([
             'names' => S::obj([
                 'class_name' => S::string(),

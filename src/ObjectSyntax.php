@@ -7,26 +7,26 @@ class ObjectSyntax extends Syntax {
 
     /**
      * The string that separates items of the object.
-     * 
+     *
      * @var string
      */
     protected $separator;
 
     /**
      * Associative array specifying the fields of the object.
-     * 
+     *
      * @var array
      */
     protected $fields;
 
     /**
      * Creates a new instance of ObjectSyntax.
-     * 
+     *
      * @param array $fields Associative array specifying the fields of the object.
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
      */
-    public function __construct($fields, $separator = null, $default = null, $description = '')
+    public function __construct($fields = [], $separator = null, $default = null, $description = '')
     {
         if ($separator === null ||  $separator == '')
             $separator = ':';
@@ -39,7 +39,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Separator getter and setter.
-     * 
+     *
      * @param  string $value
      * @return mixed
      */
@@ -54,7 +54,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Fields getter and setter.
-     * 
+     *
      * @param  array $value
      * @return mixed
      */
@@ -69,7 +69,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Returns the string representation of the syntax.
-     * 
+     *
      * @return string
      */
     public function __toString()
@@ -84,7 +84,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Checks if the provided string can be parsed as object using the fields syntaxes.
-     * 
+     *
      * @param  string $text
      * @return array
      */
@@ -119,7 +119,7 @@ class ObjectSyntax extends Syntax {
                         // Ooops, the field is required !
                         $errors = array_merge($err, ["Unable to parse the required field '{$names[$nameIndex]}' !"]);
                         break;
-                    } 
+                    }
                     // else: fine it's an optional field, we will match the same item with the next field.
                 }
                 ++ $nameIndex;
@@ -140,7 +140,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Transforms a string to object based on the fields syntaxes.
-     * 
+     *
      * @param  string $text the string to parse
      * @return mixed
      */
@@ -162,7 +162,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Checks if the provided argument can be dumped using the syntax.
-     * 
+     *
      * @param  mixed $value
      * @return array
      */
@@ -170,7 +170,7 @@ class ObjectSyntax extends Syntax {
     {
         $value = (array) $value;
         $errors = [];
-        
+
         foreach ($this->fields as $name => $syntax) {
             if (!isset($value[$name])) {
                 $errors = ["Missing field '{$name}'"];
@@ -188,7 +188,7 @@ class ObjectSyntax extends Syntax {
 
     /**
      * Converts the given parameter to a string based on the fields syntaxes.
-     * 
+     *
      * @param  mixed $value the data to encode
      * @return string
      */

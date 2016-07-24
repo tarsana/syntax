@@ -3,14 +3,14 @@
 use Tarsana\Syntax\Factory as S;
 
 class StringSyntaxTest extends PHPUnit_Framework_TestCase {
-    
-    public function testParse() {
+
+    public function test_parse() {
         $syntax = S::string();
         $input = 'Lorem ?~\| ipsum/,: dolor .';
         $this->assertEquals($input, $syntax->parse($input));
     }
 
-    public function testParseWithDefault() {
+    public function test_parse_with_default() {
         $syntax = S::string('default value');
         $input = 'Lorem ?~\| ipsum/,: dolor .';
         $this->assertEquals($input, $syntax->parse($input));
@@ -18,7 +18,7 @@ class StringSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('default value', $syntax->parse(''));
     }
 
-    public function testParseWithDefaultAndDescription() {
+    public function test_parse_with_default_and_description() {
         $syntax = S::string('default value', 'demo');
         $input = 'Lorem ?~\| ipsum/,: dolor .';
         $this->assertEquals($input, $syntax->parse($input));
@@ -31,11 +31,11 @@ class StringSyntaxTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException Tarsana\Syntax\Exceptions\ParseException
      */
-    public function testParseEmptyString() {
+    public function test_parse_empty_string() {
         S::string()->parse('');
     }
 
-    public function testDump() {
+    public function test_dump() {
         $syntax = S::string();
         $input = 'Lorem ?~\| ipsum/,: dolor .';
         $this->assertEquals($input, $syntax->dump($input));
