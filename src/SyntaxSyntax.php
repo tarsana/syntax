@@ -198,10 +198,7 @@ class SyntaxSyntax extends Syntax {
         if ($count < 1) {
             return false;
         }
-        $fields = F\chunks(
-            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
-            $this->fieldsSeparator, $results[3][0]
-        );
+        $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
         foreach ($fields as $field) {
             $field = trim($field);
             if(F\head($field) == '[' && F\last($field) == ']') {
@@ -224,10 +221,7 @@ class SyntaxSyntax extends Syntax {
         $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
         if ($count < 1)
             return null;
-        $fields = F\chunks(
-            [ ['(',')'], ['{','}'], ['[',']'], ['"','"'] ],
-            $this->fieldsSeparator, $results[3][0]
-        );
+        $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
         $fields = F\reduce(function($results, $item){
             $item = $this->doParse(trim($item));
             $results[$item->description()] = $item;
