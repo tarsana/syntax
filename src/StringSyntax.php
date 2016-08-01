@@ -7,7 +7,7 @@ class StringSyntax extends Syntax {
 
     /**
      * Returns the string representation of the syntax.
-     * 
+     *
      * @return string
      */
     public function __toString()
@@ -17,7 +17,7 @@ class StringSyntax extends Syntax {
 
     /**
      * Checks if the provided string can be parsed as string.
-     * 
+     *
      * @param  string $text
      * @return array
      */
@@ -28,7 +28,7 @@ class StringSyntax extends Syntax {
 
     /**
      * Returns the provided string.
-     * 
+     *
      * @param  string $text
      * @return string
      */
@@ -39,7 +39,7 @@ class StringSyntax extends Syntax {
 
     /**
      * Checks if the provided argument can be dumped as string.
-     * 
+     *
      * @param  mixed $text
      * @return array
      */
@@ -50,7 +50,7 @@ class StringSyntax extends Syntax {
 
     /**
      * Returns the provided string.
-     *  
+     *
      * @param  string $value
      * @return string
      */

@@ -10,21 +10,21 @@ abstract class Syntax {
 
     /**
      * The description.
-     * 
+     *
      * @var string
      */
     protected $description;
 
     /**
      * The default value.
-     * 
+     *
      * @var mixed
      */
     protected $default;
 
     /**
      * Creates an instance of the syntax.
-     * 
+     *
      * @param mixed $default
      */
     public function __construct($default = null, $description = '')
@@ -35,7 +35,7 @@ abstract class Syntax {
 
     /**
      * Default getter.
-     * 
+     *
      * @return mixed
      */
     public function getDefault()
@@ -45,7 +45,7 @@ abstract class Syntax {
 
     /**
      * Description getter and setter.
-     * 
+     *
      * @param  string $value
      * @return mixed
      */
@@ -60,7 +60,7 @@ abstract class Syntax {
 
     /**
      * Tells if the syntax is required (doesn't have default value).
-     * 
+     *
      * @return bool
      */
     public function isRequired()
@@ -70,34 +70,36 @@ abstract class Syntax {
 
     /**
      * Tells if a text can be parsed using this syntax.
-     * 
-     * @param  string $text 
-     * @return bool 
+     *
+     * @param  string $text
+     * @return bool
      */
     public function canParse($text)
     {
+        if (! $this->isRequired())
+            return true;
         return 0 == count($this->checkParse($text));
     }
 
     /**
      * Tells if a value can be dumped using this syntax.
-     * 
+     *
      * @param  mixed $value
-     * @return bool 
+     * @return bool
      */
     public function canDump($value)
     {
         return 0 == count($this->checkDump($value));
     }
-    
+
     /**
      * Checks and converts a string to data using the syntax.
      * if the string can't be parsed; the default value is
      * returned if defined or a ParseException is thrown.
-     * 
+     *
      * @param  string $text the string to parse
      * @return mixed
-     * 
+     *
      * @throws Tarsana\Syntax\Exceptions\ParseException
      */
     public function parse($text)
@@ -113,12 +115,12 @@ abstract class Syntax {
     }
 
     /**
-     * Checks and converts the given parameter to a string based on the syntax, 
+     * Checks and converts the given parameter to a string based on the syntax,
      * or throws a DumpException if the value can't be dumped
-     * 
+     *
      * @param  mixed $value the data to encode
      * @return string
-     * 
+     *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
     public function dump($value)
@@ -132,15 +134,15 @@ abstract class Syntax {
 
     /**
      * Returns the string representation of the syntax.
-     * 
+     *
      * @return string
      */
     abstract public function __toString();
 
     /**
-     * Checks if the provided string can be parsed using the 
+     * Checks if the provided string can be parsed using the
      * syntax and returns an array of parsing errors if any.
-     * 
+     *
      * @param  string $text
      * @return array
      */
@@ -148,16 +150,16 @@ abstract class Syntax {
 
     /**
      * Transforms a string to data based on the syntax.
-     * 
+     *
      * @param  string $text the string to parse
      * @return mixed
      */
     abstract protected function doParse($text);
 
     /**
-     * Checks if the provided argument can be dumped using the 
+     * Checks if the provided argument can be dumped using the
      * syntax, and returns an array of dumping errors if any.
-     * 
+     *
      * @param  mixed $value
      * @return array
      */
@@ -165,7 +167,7 @@ abstract class Syntax {
 
     /**
      * Converts the given parameter to a string based on the syntax.
-     * 
+     *
      * @param  mixed $value the data to encode
      * @return string
      */
