@@ -40,6 +40,10 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($object, $syntax->parse('Foo:76:no:Bar,Baz'));
     }
 
+    public function test_parse_empty_object() {
+        $this->assertEquals((object) [], S::obj([])->parse(''));
+    }
+
     public function test_to_string() {
         $syntax = S::obj([
             'name' => S::string(),

@@ -194,9 +194,13 @@ class SyntaxSyntax extends Syntax {
     protected function isObject ($text)
     {
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^'.$this->fieldsSeparator.'a-zA-Z0-9\[]+)?'.$this->fieldsSeparator.'?(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^'.$this->fieldsSeparator.'a-zA-Z0-9\[]+)?'.$this->fieldsSeparator.'?(.*)\}$/', $text, $results);
         if ($count < 1) {
             return false;
+        }
+        $fields = trim($results[3][0]);
+        if ($fields === '') {
+            return true;
         }
         $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
         foreach ($fields as $field) {
@@ -218,15 +222,19 @@ class SyntaxSyntax extends Syntax {
             $default = '';
         }
         $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.+)\}$/', $text, $results);
+        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.*)\}$/', $text, $results);
         if ($count < 1)
             return null;
-        $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
-        $fields = F\reduce(function($results, $item){
-            $item = $this->doParse(trim($item));
-            $results[$item->description()] = $item;
-            return $results;
-        }, [], $fields);
+
+        $fields = [];
+        if (trim($results[3][0]) != '') {
+            $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
+            $fields = F\reduce(function($results, $item){
+                $item = $this->doParse(trim($item));
+                $results[$item->description()] = $item;
+                return $results;
+            }, [], $fields);
+        }
 
         $separator = $results[2][0];
         if(empty($separator))

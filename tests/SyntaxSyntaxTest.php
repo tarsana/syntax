@@ -210,6 +210,9 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
             $s->parse('Foo:12:Bar,Baz')
         );
         $this->assertEquals('', $s->parse(''));
+        // Empty Object
+        $s = $this->checkParse('{}', 'Tarsana\Syntax\ObjectSyntax', '', true);
+        $this->assertEquals((object) [], $s->parse(''));
     }
 
     public function test_dump_object()
@@ -230,6 +233,10 @@ class SyntaxSyntaxTest extends PHPUnit_Framework_TestCase {
                 'age'     => S::number(),
                 'friends' => S::arr()->description(',')
             ], ':', '')->description('person')
+        );
+        $this->checkDump(
+            '{:,}',
+            S::obj([], ':')
         );
     }
 

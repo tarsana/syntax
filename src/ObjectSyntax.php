@@ -90,6 +90,12 @@ class ObjectSyntax extends Syntax {
      */
     public function checkParse($text)
     {
+        $errors = [];
+        // If no fields to parse, just check if the text is empty
+        if (empty($this->fields)) {
+            return (trim($text) == '') ? [] : ['No fields but non empty string given'];
+        }
+
         $items = explode($this->separator, $text);
         $fields = $this->fields;
         $names = array_keys($this->fields);
@@ -99,7 +105,6 @@ class ObjectSyntax extends Syntax {
         $itemsCount = count($items);
         $namesCount = count($names);
         $requiredCount = count($required);
-        $errors = [];
 
         if ($itemsCount < $requiredCount) {
             $requiredString = implode(', ', $required);
