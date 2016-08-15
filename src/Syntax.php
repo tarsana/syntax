@@ -44,6 +44,17 @@ abstract class Syntax {
     }
 
     /**
+     * Default setter.
+     *
+     * @return mixed
+     */
+    public function setDefault($default)
+    {
+        $this->default = $default;
+        return $this;
+    }
+
+    /**
      * Description getter and setter.
      *
      * @param  string $value

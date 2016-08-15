@@ -11,7 +11,7 @@ class StringSyntaxTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_parse_with_default() {
-        $syntax = S::string('default value');
+        $syntax = S::string()->setDefault('default value');
         $input = 'Lorem ?~\| ipsum/,: dolor .';
         $this->assertEquals($input, $syntax->parse($input));
 
