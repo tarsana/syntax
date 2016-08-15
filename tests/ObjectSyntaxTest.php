@@ -11,15 +11,15 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $syntax = S::obj()
             ->separator('|')
             ->fields([
-                'name' => S::string(),
-                 'age' => S::number()
-            ]);
+                'name' => S::string()
+            ])
+            ->field('age', S::number());
 
         $fields = $syntax->fields();
         $this->assertEquals('|', $syntax->separator());
         $this->assertEquals(2, count($fields));
-        $this->assertTrue($fields['name'] instanceof StringSyntax);
-        $this->assertTrue( $fields['age'] instanceof NumberSyntax);
+        $this->assertTrue($syntax->field('name') instanceof StringSyntax);
+        $this->assertTrue( $syntax->field('age') instanceof NumberSyntax);
     }
 
     public function test_parse() {

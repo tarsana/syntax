@@ -1,5 +1,8 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\Syntax;
+use Tarsana\Syntax\Exceptions\Exception;
+
 /**
  * Represents an array of values with the same syntax.
  */
@@ -64,6 +67,27 @@ class ObjectSyntax extends Syntax {
             return $this->fields;
         }
         $this->fields = $value;
+        return $this;
+    }
+
+    /**
+     * Setter and getter of a specific field.
+     *
+     * @param  string $name
+     * @param  Tarsana\Syntax\Syntax|null $value
+     * @return Tarsana\Syntax\Syntax|self
+     * @throws Tarsana\Syntax\Exceptions\Exception
+     */
+    public function field($name, Syntax $value = null)
+    {
+        if ($value === null) {
+            if (! array_key_exists($name, $this->fields)) {
+                throw new Exception(["No field with name {$name} is found"]);
+            }
+            return $this->fields[$name];
+        }
+
+        $this->fields[$name] = $value;
         return $this;
     }
 
