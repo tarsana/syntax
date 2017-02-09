@@ -17,7 +17,7 @@ class ConstantSyntax extends Syntax {
     /**
      * Is the constant case sensitive.
      *
-     * @var string
+     * @var bool
      */
     protected $caseSensitive;
 
