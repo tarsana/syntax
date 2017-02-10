@@ -32,9 +32,7 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
   - [Write Your Own Syntax Definition](#write-your-own-syntax-definition)
 
-- [Next Steps](#next-steps)
-
-- [Development Notes](#development-notes)
+- [Development Notes & Next Steps](#development-notes-&-next-steps)
 
 - [Contributing](#contributing)
 
@@ -454,11 +452,7 @@ $syntax = S::fromString('...') // $syntax = (new SyntaxSyntax)->parse('....')
 
 To write your own custom syntax class, you just need to inherit from [`Syntax`](https://github.com/tarsana/syntax/blob/master/docs/Syntax.md) and implement the missing methods.
 
-# Next Steps
-
-- [ ] Add more advanced syntaxes: Regular Expression, Date, ...
-
-# Development Notes
+# Development Notes & Next Steps
 
 - **Next Releases**
 
