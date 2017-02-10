@@ -22,8 +22,6 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
   - [Parsing and Dumping Booleans](#parsing-and-dumping-booleans)
 
-  - [Parsing and Dumping Constants](#parsing-and-dumping-constants) **Since Version 1.4.0**
-
   - [Parsing and Dumping Arrays](#parsing-and-dumping-arrays)
 
   - [Parsing and Dumping Objects](#parsing-and-dumping-objects)
@@ -220,38 +218,6 @@ $boolean->dump('Lorem');
 // Tarsana\Syntax\Exceptions\DumpException: Unable to dump 'Lorem' as 'boolean'
 ```
 
-## Parsing and Dumping Constants
-```php
-<?php
-use Tarsana\Syntax\ConstantSyntax;
-
-$hello = new ConstantSyntax('Hello World');
-
-new ConstantSyntax(123);
-// Tarsana\Syntax\Exceptions\Exception: The constant value should be a string !
-
-$hello->parse('Hello World');
-// 'Hello World'
-
-$hello->parse('hello world'); // Constants are case sensitive by default
-// Tarsana\Syntax\Exceptions\ParseException: Unable to parse 'hello world' as 'constant(Hello World)'
-
-$hello->caseSensitive(false); // ignoring the case
-$hello->parse('hello world');
-// 'Hello World'
-
-// caseSensitive can be specified in the constructor too
-$bar = new ConstantSyntax('bar', false);
-$bar->parse('BaR');
-// 'bar'
-
-$bar->dump('Bar');
-// 'bar'
-
-$bar->dump('foo');
-// Tarsana\Syntax\Exceptions\DumpException: Unable to dump 'foo' as 'constant(bar)'
-```
-
 ## Parsing and Dumping Arrays
 
 `ArraySyntax` represents an array of elements having the same syntax and separated by the same string. So an `ArraySyntax` is constructed using a `Syntax` (could be `NumberSyntax`, `StringSyntax` or any other) and a `separator`. It can also have a default value as 3rd argument of the constructor.
@@ -398,7 +364,6 @@ The grammar of the syntax language is the following:
 syntax   := string | number | boolean | constant | array | object
 number   := '#' string
 boolean  := string '?'
-constant := '_' string
 array    := syntax '[' array-separator ']'
 object   := string '{' object-separator fields-separator fields '}'
           | string '{' fields '}'
@@ -427,9 +392,6 @@ new NumberSyntax;
 
 // '?'
 new BooleanSyntax;
-
-// '_name'
-new ConstantSyntax('name');
 
 // 'is-valid?'
 (new BooleanSyntax)->description('is-valid');

@@ -26,13 +26,13 @@ class ConstantSyntax extends Syntax {
      *
      * @param string $value
      */
-    public function __construct($value, $caseSensitive = true, $description = null)
+    public function __construct($value, $caseSensitive = true, $default = null, $description = null)
     {
         if (! is_string($value))
             throw new Exception(["The constant value should be a string !"]);
         $this->value = $value;
         $this->caseSensitive = $caseSensitive;
-        parent::__construct(null, $description);
+        parent::__construct($default, $description);
     }
 
     /**

@@ -9,26 +9,26 @@ class ArraySyntax extends Syntax {
 
     /**
      * The string that separates items of the array.
-     * 
+     *
      * @var string
      */
     protected $separator;
 
     /**
      * The syntax of each item of the array.
-     * 
-     * @var Tarsana\Syntax\Syntax
+     *
+     * @var \Tarsana\Syntax\Syntax
      */
     protected $itemSyntax;
 
     /**
      * Creates a new instance of ArraySyntax.
-     * 
-     * @param Tarsana\Syntax\Syntax $syntax The syntax of each item of the array.
+     *
+     * @param \Tarsana\Syntax\Syntax $syntax The syntax of each item of the array.
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
      */
-    public function __construct($syntax = null, $separator = null, $default = null, $description = '')
+    public function __construct(Syntax $syntax = null, $separator = null, $default = null, $description = '')
     {
         if($syntax === null)
             $syntax = Factory::string();
@@ -43,8 +43,8 @@ class ArraySyntax extends Syntax {
 
     /**
      * Item syntax getter and setter.
-     * 
-     * @param  Tarsana\Syntax\Syntax $value
+     *
+     * @param  \Tarsana\Syntax\Syntax $value
      * @return mixed
      */
     public function itemSyntax(Syntax $value = null)
@@ -58,7 +58,7 @@ class ArraySyntax extends Syntax {
 
     /**
      * Separator getter and setter.
-     * 
+     *
      * @param  string $value
      * @return mixed
      */
@@ -73,7 +73,7 @@ class ArraySyntax extends Syntax {
 
     /**
      * Returns the string representation of the syntax.
-     * 
+     *
      * @return string
      */
     public function __toString()
@@ -82,24 +82,24 @@ class ArraySyntax extends Syntax {
     }
 
     /**
-     * Checks if the provided string can be 
+     * Checks if the provided string can be
      * parsed as array based on the syntax.
-     * 
+     *
      * @param  string $text
      * @return array
       */
     public function checkParse($text)
-    {  
+    {
         $syntax = $this->itemSyntax;
 
         $errors = array_reduce(
-            explode($this->separator, $text), 
+            explode($this->separator, $text),
             function ($result, $item) use ($syntax) {
                 return array_merge($result, $syntax->checkParse($item));
-            }, 
+            },
             []);
 
-        if (0 == count($errors)) 
+        if (0 == count($errors))
             return [];
 
         return array_merge($errors, ["Unable to parse '{$text}' as '{$this}'"]);
@@ -107,7 +107,7 @@ class ArraySyntax extends Syntax {
 
     /**
      * Transforms a string to array based on the syntax.
-     * 
+     *
      * @param  string $text the string to parse
      * @return mixed
      */
@@ -122,7 +122,7 @@ class ArraySyntax extends Syntax {
 
     /**
      * Checks if the provided argument can be dumped as array using the syntax.
-     * 
+     *
      * @param  mixed $value
      * @return array
      */
@@ -133,13 +133,13 @@ class ArraySyntax extends Syntax {
 
         $syntax = $this->itemSyntax;
         $errors = array_reduce(
-            $value, 
+            $value,
             function ($result, $item) use ($syntax) {
                 return array_merge($result, $syntax->checkDump($item));
-            }, 
+            },
             []);
 
-        if (0 == count($errors)) 
+        if (0 == count($errors))
             return [];
 
         return array_merge($errors, ["Unable to dump as '{$this}'"]);
@@ -147,7 +147,7 @@ class ArraySyntax extends Syntax {
 
     /**
      * Converts the given array to a string based on the syntax.
-     * 
+     *
      * @param  array $value the data to encode
      * @return string
      */

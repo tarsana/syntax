@@ -158,10 +158,10 @@ class SyntaxSyntax extends Syntax {
     {
         $default = null;
         if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\init(F\tail($text));
-            $default = '';
+            $text = F\tail(F\init(F\tail($text)));
+            $default = $text;
         }
-        return S::boolean($default, F\init($text));
+        return S::constant($text, $text);
     }
 
     protected function isArray ($text)
