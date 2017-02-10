@@ -22,6 +22,21 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue( $syntax->field('age') instanceof NumberSyntax);
     }
 
+    /**
+     * @expectedException Tarsana\Syntax\Exceptions\Exception
+     */
+    public function test_get_unknown_field()
+    {
+        $syntax = S::obj()
+            ->separator('|')
+            ->fields([
+                'name' => S::string()
+            ])
+            ->field('age', S::number());
+
+        $syntax->field('account');
+    }
+
     public function test_parse() {
         $syntax = S::obj([
             'name' => S::string(),

@@ -17,7 +17,7 @@ class ConstantSyntax extends Syntax {
     /**
      * Is the constant case sensitive.
      *
-     * @var string
+     * @var bool
      */
     protected $caseSensitive;
 
@@ -26,12 +26,28 @@ class ConstantSyntax extends Syntax {
      *
      * @param string $value
      */
-    public function __construct($value, $caseSensitive = true, $description = null) {
+    public function __construct($value, $caseSensitive = true, $description = null)
+    {
         if (! is_string($value))
             throw new Exception(["The constant value should be a string !"]);
         $this->value = $value;
         $this->caseSensitive = $caseSensitive;
         parent::__construct(null, $description);
+    }
+
+    /**
+     * caseSensitive getter/setter.
+     *
+     * @param  bool $value
+     * @return self|bool
+     */
+    public function caseSensitive($value = null)
+    {
+        if (null === $value)
+            return $this->caseSensitive;
+
+        $this->caseSensitive = $value;
+        return $this;
     }
 
     /**
@@ -53,9 +69,10 @@ class ConstantSyntax extends Syntax {
     public function checkParse($text)
     {
         if ($this->caseSensitive) {
-            return strtolower($text) === strtolower($this->value) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
+            return $text === $this->value ? [] : ["Unable to parse '{$text}' as '{$this}'"];
         }
-        return $text === $this->value ? [] : ["Unable to parse '{$text}' as '{$this}'"];
+
+        return strtolower($text) === strtolower($this->value) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
     }
 
     /**

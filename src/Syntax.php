@@ -148,10 +148,7 @@ abstract class Syntax {
      *
      * @return string
      */
-    public function __toString()
-    {
-        return 'string';
-    }
+    abstract public function __toString();
 
     /**
      * Checks if the provided string can be parsed using the
