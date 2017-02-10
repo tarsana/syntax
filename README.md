@@ -456,25 +456,25 @@ To write your own custom syntax class, you just need to inherit from [`Syntax`](
 
 # Next Steps
 
-- [X] Design a plain text language to define syntaxes.
-
-- [ ] Define syntaxes using JSON or YAML files.
-
 - [ ] Add more advanced syntaxes: Regular Expression, Date, ...
 
 # Development Notes
 
-- **version 1.0.0**: String, Number, Boolean, Array and Object syntaxes.
+- **Next Releases**
 
-- **version 1.0.1**:
+  - Choice/Enumeration Syntax
 
-  - Tests coverage is now **100%**
+  - Command line arguments Syntax
 
-  - Some small bugs of `ArraySyntax` and `ObjectSyntax` fixed.
+  - Date Syntax
 
-- **version 1.1.0**:
+  - URL Syntax
 
-  - `description` attribut added to `Syntax` to hold additional details.
+- **version 1.2.1**:
+
+  - `tarsana/functional` dependency updated
+
+  - couple of bug fixes
 
 - **version 1.2.0**:
 
@@ -483,6 +483,18 @@ To write your own custom syntax class, you just need to inherit from [`Syntax`](
   - `separator` and `itemSyntax` getters and setters added to `ArraySyntax`.
 
   - `separator` and `fields` getters and setters added to `ObjectSyntax`.
+
+- **version 1.1.0**:
+
+  - `description` attribut added to `Syntax` to hold additional details.
+
+- **version 1.0.1**:
+
+  - Tests coverage is now **100%**
+
+  - Some small bugs of `ArraySyntax` and `ObjectSyntax` fixed.
+
+- **version 1.0.0**: String, Number, Boolean, Array and Object syntaxes.
 
 # Contributing
 
