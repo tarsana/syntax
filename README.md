@@ -32,7 +32,7 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
   - [Write Your Own Syntax Definition](#write-your-own-syntax-definition)
 
-- [Development Notes & Next Steps](#development-notes-&-next-steps)
+- [Development Notes & Next Steps](#development-notes--next-steps)
 
 - [Contributing](#contributing)
 

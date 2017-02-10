@@ -1,15 +1,14 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\Syntax;
 use Tarsana\Syntax\Exceptions\Exception;
 
 /**
- * Represents an array of values with the same syntax.
+ * Represents a sequence of fields with different syntaxes.
  */
 class ObjectSyntax extends Syntax {
 
     /**
-     * The string that separates items of the object.
+     * The string that separates fields of the object.
      *
      * @var string
      */
@@ -28,6 +27,7 @@ class ObjectSyntax extends Syntax {
      * @param array $fields Associative array specifying the fields of the object.
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
+     * @param string $description An additional descripotion.
      */
     public function __construct($fields = [], $separator = null, $default = null, $description = '')
     {

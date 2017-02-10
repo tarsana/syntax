@@ -27,6 +27,7 @@ class ArraySyntax extends Syntax {
      * @param \Tarsana\Syntax\Syntax $syntax The syntax of each item of the array.
      * @param string $separator The string that separates items of the array.
      * @param string $default The default value.
+     * @param string $description An additional descripotion.
      */
     public function __construct(Syntax $syntax = null, $separator = null, $default = null, $description = '')
     {
