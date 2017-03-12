@@ -458,8 +458,6 @@ To write your own custom syntax class, you just need to inherit from [`Syntax`](
 
   - Choice/Enumeration Syntax
 
-  - Command line arguments Syntax
-
   - Date Syntax
 
   - URL Syntax
