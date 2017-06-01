@@ -1,44 +1,27 @@
-<?php
+<?php namespace Tarsana\Syntax\UnitTests;
 
 use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax\StringSyntax;
 
-class StringSyntaxTest extends PHPUnit_Framework_TestCase {
+class StringSyntaxTest extends TestCase {
 
     public function test_parse() {
-        $syntax = S::string();
-        $input = 'Lorem ?~\| ipsum/,: dolor .';
-        $this->assertEquals($input, $syntax->parse($input));
-    }
-
-    public function test_parse_with_default() {
-        $syntax = S::string()->setDefault('default value');
-        $input = 'Lorem ?~\| ipsum/,: dolor .';
-        $this->assertEquals($input, $syntax->parse($input));
-
-        $this->assertEquals('default value', $syntax->parse(''));
-    }
-
-    public function test_parse_with_default_and_description() {
-        $syntax = S::string('default value', 'demo');
-        $input = 'Lorem ?~\| ipsum/,: dolor .';
-        $this->assertEquals($input, $syntax->parse($input));
-        $this->assertEquals('default value', $syntax->parse(''));
-        $this->assertEquals('demo', $syntax->description());
-        $syntax->description('changed');
-        $this->assertEquals('changed', $syntax->description());
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_empty_string() {
-        S::string()->parse('');
+        $this->assertParse(S::string(), [
+            ['input' => 'Lorem ?~\| ipsum/,: dolor .', 'result' => 'Lorem ?~\| ipsum/,: dolor .'],
+            ['input' => '', 'errors' => [
+                "Error while parsing '' as String at character 0: " . StringSyntax::NO_EMPTY
+            ]]
+        ]);
     }
 
     public function test_dump() {
-        $syntax = S::string();
-        $input = 'Lorem ?~\| ipsum/,: dolor .';
-        $this->assertEquals($input, $syntax->dump($input));
+        $this->assertDump(S::string(), [
+            ['input' => 'Lorem ?~\| ipsum/,: dolor .', 'result' => 'Lorem ?~\| ipsum/,: dolor .'],
+            ['input' => '', 'result' => ''],
+            ['input' => 15, 'errors' => [
+                'Error while dumping some input as String: ' . StringSyntax::ERROR
+            ]]
+        ]);
     }
 
 }
