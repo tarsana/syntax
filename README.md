@@ -1,9 +1,8 @@
 # Tarsana Syntax
 
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb/small.png)](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb)
-
 [![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
 [![Coverage Status](https://coveralls.io/repos/github/tarsana/syntax/badge.svg?branch=master)](https://coveralls.io/github/tarsana/syntax?branch=master)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb/mini.png)](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/tarsana/syntax/blob/master/LICENSE)
 
 A tool to encode and decode strings based on flexible and composable syntax definitions.
@@ -24,15 +23,12 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
   - [Parsing and Dumping Arrays](#parsing-and-dumping-arrays)
 
+  - [Parsing and Dumping Optional Syntaxes](#parsing-and-dumping-optional-syntaxes) **Since version 2.0**
   - [Parsing and Dumping Objects](#parsing-and-dumping-objects)
 
-  - [Parsing and Dumping Syntaxes](#parsing-and-dumping-syntaxes) **Since Version 1.2.0**
+  - [Parsing and Dumping Syntaxes](#parsing-and-dumping-syntaxes) **Since version 1.2.0**
 
-  - [Using the Factory](#using-the-factory)
-
-  - [Write Your Own Syntax Definition](#write-your-own-syntax-definition)
-
-- [Development Notes & Next Steps](#development-notes-&-next-steps)
+- [Development Notes & Next Steps](#development-notes--next-steps)
 
 - [Contributing](#contributing)
 
@@ -63,17 +59,17 @@ require __DIR__ . '/../vendor/autoload.php';
 use Tarsana\Syntax\Factory as S;
 
 // a repo is an object having a name (string) and stars (number), separated by ':'
-$repo = "{:,name,#stars}";
+$repo = "{name: string, stars:number}";
 // a line consists of a first and last names, optional number of followers, and repos, separated by space. The repos are separated by ","
-$line = "{ ,first_name,last_name,[#followers],[repos{$repo}[,]]}";
+$line = "{first_name, last_name, followers: (number: 0), repos: ([{$repo}]:[]) | }";
 // a document is a list of lines separated by PHP_EOL
-$document = "{$line}[".PHP_EOL."]";
+$document = "[{$line}|".PHP_EOL."]";
 
 // Now we make the syntax object
-$documentSyntax = S::fromString($document);
+$documentSyntax = S::syntax()->parse($document);
 
 // Then we can use the defined syntax to parse the document:
-$developers = $documentSyntax->parse(trim(file_get_contents('path/to/the/file')));
+$developers = $documentSyntax->parse(trim(file_get_contents(__DIR__ . '/files/devs.txt')));
 ```
 
 `$developers` will contain the following:
@@ -141,84 +137,70 @@ composer require tarsana/syntax
 
 # Step by Step Guide
 
-In this guide, we will start with the basics then show how to use the `Factory` and `SyntaxSyntax` to do things faster.
+The class `Tarsana\Syntax\Factory` provides useful static methods to create syntaxes. In this guide, we will start with the basics then show how to use `SyntaxSyntax` to do things faster.
 
 ## Parsing and Dumping Strings
 
 ```php
 <?php
-use Tarsana\Syntax\StringSyntax;
+use Tarsana\Syntax\Factory as S;
 
-$string = new StringSyntax(); // any non empty string
+$string = S::string(); // instance of Tarsana\Syntax\StringSyntax
 
 $string->parse('Lorem ipsum dolor sit amet');
-// 'Lorem ipsum dolor sit amet'
+//=> 'Lorem ipsum dolor sit amet'
+
 $string->parse('');
-// Tarsana\Syntax\Exceptions\ParseException: Unable to parse '' as 'string'
+//  Tarsana\Syntax\Exceptions\ParseException: Error while parsing '' as String at character 0: String should not be empty
 
 $string->dump('Lorem ipsum dolor sit amet');
-// 'Lorem ipsum dolor sit amet'
+//=> 'Lorem ipsum dolor sit amet'
 $string->dump('');
-// ''
-
-$stringWithDefaultValue = new StringSyntax('default value here'); // any string
-
-$stringWithDefaultValue->parse('');
-// 'default value here'
+//=> ''
 ```
 
 ## Parsing and Dumping Numbers
 
 ```php
 <?php
-use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\Factory as S;
 
-$number = new NumberSyntax(); // any numeric value
+$number = S::number(); // instance of Tarsana\Syntax\NumberSyntax
 
-$number->parse('58.9');
-// 58.9
+$number->parse('58.9'); //=> 58.9
 
-$number->parse('Lorem');
-// Tarsana\Syntax\Exceptions\ParseException: Unable to parse 'Lorem' as 'number'
+$number->parse('Lorem12');
+//  Tarsana\Syntax\Exceptions\ParseException: Error while parsing 'Lorem' as Number at character 0: Not a numeric value
 ```
 
 ## Parsing and Dumping Booleans
 ```php
 <?php
-use Tarsana\Syntax\BooleanSyntax;
+use Tarsana\Syntax\Factory as S;
 
-$boolean = new BooleanSyntax();
+$boolean = S::boolean(); // instance of Tarsana\Syntax\BooleanSyntax
 
-$boolean->parse('true');
-// true
-$boolean->parse('yes');
-// true
-$boolean->parse('y');
-// true
-$boolean->parse('TrUe'); // case insensitive
-// true
-
-$boolean->parse('false');
-// false
-$boolean->parse('no');
-// false
-$boolean->parse('N');
-// false
+$boolean->parse('true'); //=> true
+$boolean->parse('yes'); //=> true
+$boolean->parse('y'); //=> true
+$boolean->parse('TrUe'); //=> true (case insensitive)
+$boolean->parse('false'); //=> false
+$boolean->parse('no'); //=> false
+$boolean->parse('N'); //=> false
 
 $boolean->parse('Lorem');
-// Tarsana\Syntax\Exceptions\ParseException: Unable to parse 'Lorem' as 'boolean'
+// Tarsana\Syntax\Exceptions\ParseException: Error while parsing 'Lorem' as Boolean at character 0: Boolean value should be one of "yes", "no", "y", "n", "true", "false"
 
-$boolean->dump(true);
-// 'true'
-$boolean->dump(false);
-// 'false'
+$boolean->dump(true); //=> 'true'
+$boolean->dump(false); //=> 'false'
+
 $boolean->dump('Lorem');
-// Tarsana\Syntax\Exceptions\DumpException: Unable to dump 'Lorem' as 'boolean'
+// Tarsana\Syntax\Exceptions\DumpException: Error while dumping some input as Boolean: Not a boolean
 ```
 
 ## Parsing and Dumping Arrays
 
-`ArraySyntax` represents an array of elements having the same syntax and separated by the same string. So an `ArraySyntax` is constructed using a `Syntax` (could be `NumberSyntax`, `StringSyntax` or any other) and a `separator`. It can also have a default value as 3rd argument of the constructor.
+`Tarsana\Syntax\ArraySyntax` represents an array of elements having the same syntax and separated by the same string. So an `ArraySyntax` is constructed using a `Syntax` (could be `NumberSyntax`, `StringSyntax` or any other) and a `separator`.
 
 - if the `Syntax` argument is missing, an instance of `StringSyntax` is used by default.
 
@@ -226,53 +208,63 @@ $boolean->dump('Lorem');
 
 ```php
 <?php
-use Tarsana\Syntax\ArraySyntax;
-use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\Factory as S;
 
-$strings = new ArraySyntax();
+$strings = S::array();
 
-$strings->parse('aa:bb,cc,ss,089,true');
-// ['aa:bb','cc','ss','089','true']
-// Yeah, this is the same as explode(',', ....)
+$strings->parse('aa:bb,cc,"ss,089",true');
+//=> ['aa:bb','cc','ss,089','true']
+// Note that we can use "..." to escape the separator
 
-$strings->dump(['aa','bb','76']);
-// 'aa,bb,76'
-// Yeah, this is the same as implode(',', ....)
+$strings->dump(['aa','bb,cc','76']);
+//=> 'aa,"bb,cc",76'
+// Yeah, it's smart enough to auto-escape items containing the separator
 
-$vector = new ArraySyntax(new NumberSyntax());
+$vector = S::array(S::number());
 
 $vector->parse('1,2,3,4,5');
-// [1, 2, 3, 4, 5]
+//=> [1, 2, 3, 4, 5]
 
-$matrix = new ArraySyntax($vector, PHP_EOL);
+$matrix = S::array($vector, PHP_EOL);
 
 $matrix->parse(
 '1,2,3
 4,5,6,7
 8,9,100');
-// [ [1, 2, 3], [4, 5, 6, 7], [8, 9, 100] ]
+//=> [ [1, 2, 3], [4, 5, 6, 7], [8, 9, 100] ]
+```
+
+## Parsing and Dumping Optional Syntaxes
+
+`Tarsana\Syntax\Optional` represents an optional syntax. Given a syntax and a static default value; it will try to parse inputs using the syntax and return the default value when in case of failure.
+
+```php
+<?php
+use Tarsana\Syntax\Factory as S;
+
+$optionalNumber = S::optional(S::number(), 10);
+
+$optionalNumber->parse(15); //=> 15
+$optionalNumber->success(); //=> true
+
+$optionalNumber->parse('Yo'); //=> 10 (the default value)
+$optionalNumber->success(); //=> false
 ```
 
 ## Parsing and Dumping Objects
 
-`ObjectSyntax` represents an object in which every field can have its own syntax. It's defined by providing an associative array of fields and a `separator` (if missing, the separator by default is `':'`).
+`Tarsana\Syntax\ObjectSyntax` represents an object in which every field can have its own syntax. It's defined by providing an associative array of fields and a `separator` (if missing, the separator by default is `':'`).
 
 ```php
 <?php
-use Tarsana\Syntax\ArraySyntax;
-use Tarsana\Syntax\BooleanSyntax;
-use Tarsana\Syntax\NumberSyntax;
-use Tarsana\Syntax\ObjectSyntax;
-use Tarsana\Syntax\StringSyntax;
+use Tarsana\Syntax\Factory as S;
 
-$repository = new ObjectSyntax([
-    'name' => new StringSyntax(),
-    'is_private' => new BooleanSyntax(false),
-    'forks' => new NumberSyntax(0),
-    'stars' => new NumberSyntax(0)
+$repository = S::object([
+    'name' => S::string(),
+    'is_private' => S::optional(S::boolean(), false),
+    'forks' => S::optional(S::number(), 0),
+    'stars' => S::optional(S::number(), 0)
 ]);
-// is_private, forks and stars are optional fields
-// because they have default values
 
 $repository->parse('tarsana/syntax');
 // an stdClass as below
@@ -309,10 +301,10 @@ $data = (object) [
 $repository->dump($data);
 // 'foo/bar:false:9:3'
 
-$developer = new ObjectSyntax([
-    'name' => new StringSyntax(),
-    'followers' => new NumberSyntax(0),
-    'repositories' => new ArraySyntax($repository, ',', [])
+$developer = S::object([
+    'name' => S::string(),
+    'followers' => S::optional(S::number(), 0),
+    'repositories' => S::optional(S::array($repository), [])
 ], ' ');
 
 $developer->parse('Amine');
@@ -335,132 +327,77 @@ $developer->parse('Amine tarsana/syntax,webNeat/lumen-generators:16:57');
 
 ## Parsing and Dumping Syntaxes
 
-Now you know how to parse and dump basic types : `string`, `boolean`, `number`, `array` and `object`. But you may notice that writing code for complex syntaxes (object including arrays including objects ...) requires many complex lines of code. `SyntaxSyntax` was introduced to solve this issue. As the name shows, it's a `Syntax` that parses and dumps syntaxes, a meta syntax.
+Now you know how to parse and dump basic types : `string`, `boolean`, `number`, `array`, `optional` and `object`. But you may notice that writing code for complex syntaxes (object including arrays including objects ...) requires many complex lines of code. `SyntaxSyntax` was introduced to solve this issue. As the name shows, it's a `Syntax` that parses and dumps syntaxes, a meta syntax!
 
 So instead of writing this:
 
 ```php
-$personSyntax = new ObjectSyntax([
-  'name' => new StringSyntax,
-   'age' => new NumberSyntax,
-   'vip' => new BooleanSyntax
-  'friends' => new ArraySyntax(new StringSyntax)
+$personSyntax = S::object([
+  'name' => S::string(),
+   'age' => S::number(),
+   'vip' => S::boolean(),
+  'friends' => S::array()
 ]);
 ```
 
 You simply write this
 
 ```php
-$personSyntax = (new SyntaxSyntax)->parse('{name,#age,vip?,friends[]}');
+$personSyntax = S::syntax()->parse('{name, age:number, vip:boolean, friends:[]}');
 ```
 
-### Grammar
+### Rules
 
-The grammar of the syntax language is the following:
-
-```
-syntax   := string | number | boolean | constant | array | object
-number   := '#' string
-boolean  := string '?'
-array    := syntax '[' array-separator ']'
-object   := string '{' object-separator fields-separator fields '}'
-          | string '{' fields '}'
-fields   := syntax
-          | syntax fields-separator fields
-string           := [a-zA-Z-_]*
-array-separator  := [^[]*
-object-separator := [^,a-zA-Z0-9\[]+
-fields-separator := ','
-```
+- `S::string()` is `string`.
+- `S::number()` is `number`.
+- `S::boolean()` is `boolean`.
+- `S::optional($type, $default)` is `(type:default)` where `type` is the string corresponding to `$type` and `default` is `json_encode($default)`.
+- `S::array($type, $separator)` is `[type|separator]` where`type` is the string corresponding to `$type` and `separator` is the same as `$separator`. If the separator is omitted (ie. `[type]`); the default value is `,`.
+t)`.
+- `S::object(['name1' => $type1, 'name2' => $type2], $separator)` is `{name1:type1, name2:type2 |separator]` . If the separator is missing the default value is `:`.
 
 ### Examples
 
 ```php
-// ''
-new StringSyntax;
+// '{name: string, age: number}'
+S::object([
+  'name' => S::string(),
+   'age' => S::number()
+])
 
-// 'name'
-(new StringSyntax)->description('name');
-
-// '#'
-new NumberSyntax;
-
-// '#age'
-(new NumberSyntax)->description('age');
-
-// '?'
-new BooleanSyntax;
-
-// 'is-valid?'
-(new BooleanSyntax)->description('is-valid');
-
-// 'names[,]'
-(new ArraySyntax(new StringSyntax))->description('names');
-
-// '#numbers[|]'
-(new ArraySyntax(new NumberSyntax, '|'))->description('numbers');
-
-// '?[]'
-new ArraySyntax(new BooleanSyntax);
-
-// '{:,name,#age}'
-new ObjectSyntax([
-  'name' => new StringSyntax,
-   'age' => new NumberSyntax
-], ':')
-
-// 'rectangle{position{|,#x,#y},#width,#height}'
-(new ObjectSyntax([
-  'position' => new ObjectSyntax([
-    'x' => new NumberSyntax,
-    'y' => new NumberSyntax
+// '{position: {x: number, y: number |"|"}, width:number, height:number}'
+S::obejct([
+  'position' => S::object([
+    'x' => S::number(),
+    'y' => S::number()
   ], '|'),
-   'width' => new NumberSyntax,
-  'height' => new NumberSyntax
-], ':'))->description('rectangle')
+   'width' => S::number(),
+  'height' => S::number()
+])
 
-// 'repo{name,#stars,contributers{|,name,email}[]}'
-(new ObjectSyntax([
-  'name'  => new StringSyntax,
-  'stars' => new NumberSyntax,
-  'contributers' => new ArraySyntax(new ObjectSyntax([
-    'name'  => new StringSyntax,
-    'email' => new StringSyntax
-  ], '|')),
-]))->description('repo')
+// '{name, stars:number, contributers: [{name, email|-}]}'
+S::object([
+  'name'  => S::string(),
+  'stars' => S::number(),
+  'contributers' => S::array(S::object([
+    'name'  => S::string(),
+    'email' => S::string()
+  ], '-'))
+])
 ```
-
-## Using the Factory
-
-The class `Tarsana\Syntax\Factory` provides some static methods to get ride of the `new` keyword when defining syntaxes. These methods are just aliases and have the same parameters as the constructors. In addition, it provides the method `fromString` which uses `SyntaxSyntax` to make a syntax from its string definition.
-
-```php
-<?php
-use Tarsana\Syntax\Factory as S;
-
-$syntax = S::string(); // $syntax = new StringSyntax;
-$syntax = S::boolean() // $syntax = new BooleanSyntax;
-$syntax = S::number(); // $syntax = new NumberSyntax;
-$syntax = S::arr(...); // $syntax = new ArraySyntax(...);
-$syntax = S::obj(...); // $syntax = new ObjectSyntax(...);
-$syntax = S::syntax(); // $syntax = new SyntaxSyntax;
-
-$syntax = S::fromString('...') // $syntax = (new SyntaxSyntax)->parse('....')
-```
-
-## Write Your Own Syntax Definition
-
-To write your own custom syntax class, you just need to inherit from [`Syntax`](https://github.com/tarsana/syntax/blob/master/docs/Syntax.md) and implement the missing methods.
 
 # Development Notes & Next Steps
 
-- **Next Releases**
+- **version 2.0**
 
-  - Choice/Enumeration Syntax
-
-  - Date Syntax
-
-  - URL Syntax
+  - Separators and default values can be specified when creating syntax from string.
+  - Escaping separators is now possible.
+  - `OptionalSyntax` added.
+  - Attributes `default` and `description` removed from `Syntax` class.
+  - Upgraded to PHPUnit 6 and PHP 7.
+  - No dependencies.
+  - Detailed Exceptions with position of errors.
+  - Better `Factory` methods.
 
 - **version 1.2.1**:
 

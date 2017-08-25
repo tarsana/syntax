@@ -1,67 +1,76 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\Exceptions\ParseException;
+use Tarsana\Syntax\Exceptions\DumpException;
+
 /**
  * Represents a boolean.
  */
 class BooleanSyntax extends Syntax {
 
-    /**
-     * Returns the string representation of the syntax.
-     * 
-     * @return string
-     */
-    public function __toString()
-    {
-        return 'boolean';
-    }
+    const TRUE_VALUES  = ['true', 'yes', 'y'];
+    const FALSE_VALUES = ['false', 'no', 'n'];
+
+    const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
+    const DUMP_ERROR  = 'Not a boolean';
+
+    protected static $instance = null;
 
     /**
-     * Checks if the provided string can be parsed as boolean.
-     * 
+     * Returns the BooleanSyntax instance.
+     *
+     * @return Tarsana\Syntax\BooleanSyntax
+     */
+    public static function instance() : BooleanSyntax
+    {
+        if (self::$instance === null)
+            self::$instance = new BooleanSyntax;
+        return self::$instance;
+    }
+
+    private function __construct() {}
+
+    /**
+     * Parses the `$text` and returns the
+     * result or throws a `ParseException`.
+     *
      * @param  string $text
-     * @return array
-     */
-    public function checkParse($text)
-    {
-        return in_array (
-            strtolower(trim($text)), 
-            ['true', 'yes', 'y', 'false', 'no', 'n']
-        ) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
-    }
-
-    /**
-     * Transforms a string to boolean.
-     * 
-     * @param  string $text the string to parse
      * @return bool
+     *
+     * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    protected function doParse($text)
+    public function parse(string $text) : bool
     {
-        if (in_array(strtolower(trim($text)), ['true', 'yes', 'y']))
-            return true;
-        return false;
+        $lower = strtolower($text);
+        if (! in_array($lower, array_merge(self::TRUE_VALUES, self::FALSE_VALUES)))
+            throw new ParseException($this, $text, 0, self::PARSE_ERROR);
+        return in_array($lower, self::TRUE_VALUES);
     }
 
     /**
-     * Checks if the provided argument can be dumped as boolean.
-     * 
-     * @param  mixed $value
-     * @return array
-     */
-    public function checkDump($value)
-    {
-        return is_bool($value) ? [] : ["Unable to dump '{$value}' as '{$this}'"];
-    }
-
-    /**
-     * Converts the given boolean to a string.
-     * 
-     * @param  bool $value the data to encode
+     * Dumps the `$value` and returns "true" or "false".
+     *
+     * @param  bool $value
      * @return string
+     *
+     * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    protected function doDump($value)
+    public function dump($value) : string
     {
+        if (! is_bool($value))
+            throw new DumpException($this, $value, self::DUMP_ERROR);
+
         return $value ? 'true' : 'false';
     }
-    
+
+    /**
+     * Returns the string representation of the syntax.
+     *
+     * @return string
+     */
+    public function __toString() : string
+    {
+        return 'Boolean';
+    }
+
 }

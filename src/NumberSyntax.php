@@ -1,62 +1,71 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\Exceptions\DumpException;
+use Tarsana\Syntax\Exceptions\ParseException;
+
 /**
- * Represents a number.
+ * Represents a string.
  */
 class NumberSyntax extends Syntax {
 
-    /**
-     * Returns the string representation of the syntax.
-     * 
-     * @return string
-     */
-    public function __toString()
-    {
-        return 'number';
-    }
+    const ERROR = 'Not a numeric value';
+
+    protected static $instance = null;
 
     /**
-     * Checks if the provided string can be parsed as number.
-     * 
+     * Returns the NumberSyntax instance.
+     *
+     * @return Tarsana\Syntax\NumberSyntax
+     */
+    public static function instance() : NumberSyntax
+    {
+        if (self::$instance === null)
+            self::$instance = new NumberSyntax;
+        return self::$instance;
+    }
+
+    private function __construct() {}
+
+    /**
+     * Parses the `$text` and returns the
+     * result or throws a `ParseException`.
+     *
      * @param  string $text
-     * @return array
+     * @return float
+     *
+     * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    public function checkParse($text)
+    public function parse(string $text)
     {
-        return is_numeric($text) ? [] : ["Unable to parse '{$text}' as '{$this}'"];
-    }
-
-    /**
-     * Transforms a string to number.
-     * 
-     * @param  string $text the string to parse
-     * @return int|float
-     */
-    protected function doParse($text)
-    {
+        if (! is_numeric($text))
+            throw new ParseException($this, $text, 0, self::ERROR);
         return $text + 0;
     }
 
     /**
-     * Checks if the provided argument can be dumped as a number.
-     * 
-     * @param  mixed $value
-     * @return array
+     * Dumps the `$value` and returns the
+     * result or throws a `DumpException`.
+     *
+     * @param  int|float $value
+     * @return string
+     *
+     * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function checkDump($value)
+    public function dump($value) : string
     {
-        return is_numeric($value) ? [] : ["Unable to dump '{$value}' as '{$this}'"];
+        if (! is_numeric($value))
+            throw new DumpException($this, $value, self::ERROR);
+
+        return ''. $value;
     }
 
     /**
-     * Converts the given number to a numeric string.
-     * 
-     * @param  int|float $value the data to encode
+     * Returns the string representation of the syntax.
+     *
      * @return string
      */
-    protected function doDump($value)
+    public function __toString() : string
     {
-        return "{$value}";
+        return 'Number';
     }
-
 }

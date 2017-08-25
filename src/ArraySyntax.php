@@ -1,11 +1,16 @@
 <?php namespace Tarsana\Syntax;
 
+use Tarsana\Syntax\Exceptions\DumpException;
+use Tarsana\Syntax\Exceptions\ParseException;
 use Tarsana\Syntax\Syntax;
 
 /**
  * Represents an array of values with the same syntax.
  */
 class ArraySyntax extends Syntax {
+
+    const DEFAULT_SEPARATOR = ',';
+    const ERROR = 'Not an array';
 
     /**
      * The string that separates items of the array.
@@ -17,42 +22,36 @@ class ArraySyntax extends Syntax {
     /**
      * The syntax of each item of the array.
      *
-     * @var \Tarsana\Syntax\Syntax
+     * @var Tarsana\Syntax\Syntax
      */
-    protected $itemSyntax;
+    protected $syntax;
 
     /**
      * Creates a new instance of ArraySyntax.
-     *
-     * @param \Tarsana\Syntax\Syntax $syntax The syntax of each item of the array.
-     * @param string $separator The string that separates items of the array.
-     * @param string $default The default value.
      */
-    public function __construct(Syntax $syntax = null, $separator = null, $default = null, $description = '')
+    public function __construct(Syntax $syntax = null, string $separator = null)
     {
         if($syntax === null)
             $syntax = Factory::string();
         if ($separator === null || $separator == '')
-            $separator = ',';
+            $separator = self::DEFAULT_SEPARATOR;
 
-        $this->itemSyntax = $syntax;
+        $this->syntax = $syntax;
         $this->separator = $separator;
-
-        parent::__construct($default, $description);
     }
 
     /**
      * Item syntax getter and setter.
      *
-     * @param  \Tarsana\Syntax\Syntax $value
-     * @return mixed
+     * @param  Tarsana\Syntax\Syntax $value
+     * @return Tarsana\Syntax\Syntax
      */
-    public function itemSyntax(Syntax $value = null)
+    public function syntax(Syntax $value = null) : Syntax
     {
         if (null === $value) {
-            return $this->itemSyntax;
+            return $this->syntax;
         }
-        $this->itemSyntax = $value;
+        $this->syntax = $value;
         return $this;
     }
 
@@ -60,9 +59,9 @@ class ArraySyntax extends Syntax {
      * Separator getter and setter.
      *
      * @param  string $value
-     * @return mixed
+     * @return self|string
      */
-    public function separator($value = null)
+    public function separator(string $value = null)
     {
         if (null === $value) {
             return $this->separator;
@@ -76,88 +75,64 @@ class ArraySyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString()
+    public function __toString() : string
     {
-        return "array of ({$this->itemSyntax}) separated by '{$this->separator}'";
+        return "Array of ({$this->syntax}) separated by '{$this->separator}'";
     }
 
     /**
-     * Checks if the provided string can be
-     * parsed as array based on the syntax.
-     *
-     * @param  string $text
-     * @return array
-      */
-    public function checkParse($text)
-    {
-        $syntax = $this->itemSyntax;
-
-        $errors = array_reduce(
-            explode($this->separator, $text),
-            function ($result, $item) use ($syntax) {
-                return array_merge($result, $syntax->checkParse($item));
-            },
-            []);
-
-        if (0 == count($errors))
-            return [];
-
-        return array_merge($errors, ["Unable to parse '{$text}' as '{$this}'"]);
-    }
-
-    /**
-     * Transforms a string to array based on the syntax.
+     * Transforms a string to array based on
+     * the syntax or throws a ParseException.
      *
      * @param  string $text the string to parse
-     * @return mixed
-     */
-    protected function doParse($text)
-    {
-        $syntax = $this->itemSyntax;
-
-        return array_map(function ($item) use ($syntax) {
-            return $syntax->parse($item);
-        }, explode($this->separator, $text));
-    }
-
-    /**
-     * Checks if the provided argument can be dumped as array using the syntax.
-     *
-     * @param  mixed $value
      * @return array
+     *
+     * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    public function checkDump($value)
+    public function parse(string $text) : array
     {
-        if (! is_array($value))
-            return ["Unable to dump '{$value}' as '{$this}'"];
+        $index = 0;
+        $items = Text::split($text, $this->separator);
+        $array = [];
+        try {
+            foreach ($items as $item) {
+                $array[] = $this->syntax->parse($item);
+                $index += strlen($item) + 1;
+            }
+        } catch (ParseException $e) {
+            throw new ParseException($this, $text, $index + $e->position(),
+                "Unable to parse the item '{$item}'", $e
+            );
+        }
 
-        $syntax = $this->itemSyntax;
-        $errors = array_reduce(
-            $value,
-            function ($result, $item) use ($syntax) {
-                return array_merge($result, $syntax->checkDump($item));
-            },
-            []);
-
-        if (0 == count($errors))
-            return [];
-
-        return array_merge($errors, ["Unable to dump as '{$this}'"]);
+        return $array;
     }
 
     /**
-     * Converts the given array to a string based on the syntax.
+     * Converts the given array to a string based
+     * on the syntax or throws a DumpException.
      *
-     * @param  array $value the data to encode
+     * @param  array $values the data to encode
      * @return string
+     *
+     * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    protected function doDump($value)
+    public function dump($values) : string
     {
-        $syntax = $this->itemSyntax;
+        if (! is_array($values))
+            throw new DumpException($this, $values, self::ERROR);
+        $items = [];
+        $index = 0;
+        try {
+            foreach ($values as $key => $value) {
+                $index = $key;
+                $items[] = $this->syntax->dump($value);
+            }
+        } catch (DumpException $e) {
+            throw new DumpException($this, $values, "Unable to dump item at key {$index}", $e);
+        }
 
-        return implode($this->separator, array_map(function ($item) use ($syntax) {
-            return $syntax->dump($item);
-        }, $value));
+        return Text::join($items, $this->separator);
     }
 
 }

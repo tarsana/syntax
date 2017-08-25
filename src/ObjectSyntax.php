@@ -1,12 +1,18 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\Syntax;
+use Tarsana\Syntax\Debugger;
+use Tarsana\Syntax\Exceptions\DumpException;
 use Tarsana\Syntax\Exceptions\Exception;
+use Tarsana\Syntax\Exceptions\ParseException;
+use Tarsana\Syntax\OptionalSyntax;
+use Tarsana\Syntax\Syntax;
 
 /**
- * Represents an array of values with the same syntax.
+ * Represents an couple of values with differeny syntaxes.
  */
 class ObjectSyntax extends Syntax {
+
+    const DEFAULT_SEPARATOR = ':';
 
     /**
      * The string that separates items of the object.
@@ -27,17 +33,16 @@ class ObjectSyntax extends Syntax {
      *
      * @param array $fields Associative array specifying the fields of the object.
      * @param string $separator The string that separates items of the array.
-     * @param string $default The default value.
      */
-    public function __construct($fields = [], $separator = null, $default = null, $description = '')
+    public function __construct(array $fields, string $separator = null)
     {
+        if (empty($fields))
+            throw new \InvalidArgumentException('ObjectSyntax should have at least one field');
         if ($separator === null ||  $separator == '')
-            $separator = ':';
+            $separator = self::DEFAULT_SEPARATOR;
 
         $this->fields = $fields;
         $this->separator = $separator;
-
-        parent::__construct($default, $description);
     }
 
     /**
@@ -76,15 +81,24 @@ class ObjectSyntax extends Syntax {
      * @param  string $name
      * @param  Tarsana\Syntax\Syntax|null $value
      * @return Tarsana\Syntax\Syntax|self
-     * @throws Tarsana\Syntax\Exceptions\Exception
+     *
+     * @throws InvalidArgumentException
      */
-    public function field($name, Syntax $value = null)
+    public function field(string $name, Syntax $value = null)
     {
         if ($value === null) {
-            if (! array_key_exists($name, $this->fields)) {
-                throw new Exception(["No field with name {$name} is found"]);
+            $names = explode('.', $name);
+            $syntax = $this;
+            foreach ($names as $field) {
+                if ($field == 'syntax' && method_exists($syntax, 'syntax')) {
+                    $syntax = $syntax->syntax();
+                } else if ($syntax instanceof ObjectSyntax && array_key_exists($field, $syntax->fields)) {
+                    $syntax = $syntax->fields[$field];
+                } else {
+                    throw new \InvalidArgumentException("field '{$name}' not found");
+                }
             }
-            return $this->fields[$name];
+            return $syntax;
         }
 
         $this->fields[$name] = $value;
@@ -96,139 +110,104 @@ class ObjectSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString()
+    public function __toString() : string
     {
         $fields = [];
         foreach ($this->fields as $name => $syntax) {
-            $fields[] = "{$name}: ({$syntax})";
+            $fields[] = "{$name}: {$syntax}";
         }
         $fields = implode(', ', $fields);
-        return "object {{$fields}} separated by '{$this->separator}'";
+        return "Object {{$fields}} separated by '{$this->separator}'";
     }
 
     /**
-     * Checks if the provided string can be parsed as object using the fields syntaxes.
-     *
-     * @param  string $text
-     * @return array
-     */
-    public function checkParse($text)
-    {
-        $errors = [];
-        // If no fields to parse, just check if the text is empty
-        if (empty($this->fields)) {
-            return (trim($text) == '') ? [] : ['No fields but non empty string given'];
-        }
-
-        $items = explode($this->separator, $text);
-        $fields = $this->fields;
-        $names = array_keys($this->fields);
-        $required = array_filter($names, function ($name) use ($fields) {
-            return $fields[$name]->isRequired();
-        });
-        $itemsCount = count($items);
-        $namesCount = count($names);
-        $requiredCount = count($required);
-
-        if ($itemsCount < $requiredCount) {
-            $requiredString = implode(', ', $required);
-            $itemsString = implode(', ', $items);
-            $errors[] = "Some required fields are missing; required fields: {{$requiredString}}, items: {{$itemsString}}";
-        } else if ($itemsCount > $namesCount) {
-            $errors[] = "Too much items; {$namesCount} fields but got {$itemsCount} items !";
-        } else {
-            $itemIndex = 0;
-            $nameIndex = 0;
-            while ($nameIndex < $namesCount && $itemIndex < $itemsCount) {
-                $err = $this->fields[$names[$nameIndex]]->checkParse($items[$itemIndex]);
-                if (0 == count($err)) { // no error, move on to the next item
-                    ++ $itemIndex;
-                } else { // this item does not correspond to this field
-                    if ($this->fields[$names[$nameIndex]]->isRequired()) {
-                        // Ooops, the field is required !
-                        $errors = array_merge($err, ["Unable to parse the required field '{$names[$nameIndex]}' !"]);
-                        break;
-                    }
-                    // else: fine it's an optional field, we will match the same item with the next field.
-                }
-                ++ $nameIndex;
-            }
-            // No more items, so it remaining fields, they should be optional !
-            while ($nameIndex < $namesCount) {
-                if ($this->fields[$names[$nameIndex]]->isRequired()) {
-                    $errors[] = "Missing required field '{$names[$nameIndex]}'";
-                    break;
-                }
-                ++ $nameIndex;
-            }
-
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Transforms a string to object based on the fields syntaxes.
+     * Transforms a string to an object based
+     * on the fields or throws a ParseException.
      *
      * @param  string $text the string to parse
-     * @return mixed
+     * @return object
+     *
+     * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    protected function doParse($text)
+    public function parse(string $text) : \stdClass
     {
-        $result = new \stdClass;
-        $items = explode($this->separator, $text);
+        $items = Text::split($text, $this->separator);
+        $itemsCount = count($items);
+        $itemIndex = 0;
+        $names = array_keys($this->fields);
+        $namesCount = count($names);
+        $nameIndex = 0;
         $index = 0;
-        foreach ($this->fields as $name => $syntax) {
-            if(isset($items[$index]) && 0 == count($syntax->checkParse($items[$index]))) {
-                $result->{$name} = $syntax->doParse($items[$index]);
-                ++ $index;
-            } else {
-                $result->{$name} = $syntax->getDefault();
+        $separatorLength = strlen($this->separator);
+        $result = [];
+        $itemsLeft = false;
+        try {
+            while ($itemIndex < $itemsCount && $nameIndex < $namesCount) {
+                $syntax = $this->fields[$names[$nameIndex]];
+                $result[$names[$nameIndex]] = $syntax->parse($items[$itemIndex]);
+                $index += strlen($items[$itemIndex]) + $separatorLength;
+                $nameIndex ++;
+                $itemIndex ++;
+                if ($syntax instanceof OptionalSyntax && !$syntax->success()) {
+                    $itemIndex --;
+                }
             }
+            // if items are left
+            if ($itemIndex < $itemsCount)
+                $itemsLeft = true;
+            // if fields are left
+            while ($nameIndex < $namesCount) {
+                $syntax = $this->fields[$names[$nameIndex]];
+                $result[$names[$nameIndex]] = $syntax->parse('');
+                $nameIndex ++;
+            }
+        } catch (ParseException $e) {
+            if ($itemIndex < $itemsCount)
+                $error = "Unable to parse the item '{$items[$itemIndex]}' for field '{$names[$nameIndex]}'";
+            else
+                $error = "No item left for field '{$names[$nameIndex]}'";
+            throw new ParseException($this, $text, $index + $e->position(), $error, $e);
         }
-        return $result;
+
+        if ($itemsLeft)
+            throw new ParseException($this, $text, $index - $separatorLength,
+                "Additional items with no corresponding fields");
+
+        return (object) $result;
     }
 
     /**
-     * Checks if the provided argument can be dumped using the syntax.
+     * Transforms an object to a string based
+     * on the fields or throws a DumpException.
      *
      * @param  mixed $value
-     * @return array
-     */
-    public function checkDump($value)
-    {
-        $value = (array) $value;
-        $errors = [];
-
-        foreach ($this->fields as $name => $syntax) {
-            if (!isset($value[$name])) {
-                $errors = ["Missing field '{$name}'"];
-                break;
-            }
-            $err = $syntax->checkDump($value[$name]);
-            if (0 < count($err)) {
-                $errors = array_merge($err, ["Unable to dump field '{$name}'"]);
-                break;
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Converts the given parameter to a string based on the fields syntaxes.
-     *
-     * @param  mixed $value the data to encode
      * @return string
+     *
+     * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    protected function doDump($value)
+    public function dump($value) : string
     {
         $value = (array) $value;
-        $fields = [];
-        foreach ($this->fields as $name => $syntax) {
-            $fields[] = $syntax->doDump($value[$name]);
+        $result = [];
+        $current = '';
+        $missingField = false;
+        try {
+            foreach ($this->fields as $name => $syntax) {
+                $current = $name;
+                if (!array_key_exists($name, $value)) {
+                    $missingField = true;
+                    break;
+                }
+                $result[] = $syntax->dump($value[$name]);
+            }
+        } catch (DumpException $e) {
+            throw new DumpException($this, $value, "Unable to dump the field '{$current}'", $e);
         }
-        return implode($this->separator, $fields);
+
+        if ($missingField)
+            throw new DumpException($this, $value, "Missing field '{$name}'");
+
+        return Text::join($result, $this->separator);
     }
 
 }

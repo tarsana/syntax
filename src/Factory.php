@@ -1,47 +1,40 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\ArraySyntax;
-use Tarsana\Syntax\BooleanSyntax;
-use Tarsana\Syntax\NumberSyntax;
-use Tarsana\Syntax\ObjectSyntax;
-use Tarsana\Syntax\StringSyntax;
-use Tarsana\Syntax\SyntaxSyntax;
-
 class Factory {
 
-    public static function string($default = null, $description = '')
+    public static function string() : StringSyntax
     {
-        return new StringSyntax($default, $description);
+        return StringSyntax::instance();
     }
 
-    public static function boolean($default = null, $description = '')
+    public static function boolean() : BooleanSyntax
     {
-        return new BooleanSyntax($default, $description);
+        return BooleanSyntax::instance();
     }
 
-    public static function number($default = null, $description = '')
+    public static function number() : NumberSyntax
     {
-        return new NumberSyntax($default, $description);
+        return NumberSyntax::instance();
     }
 
-    public static function arr($syntax = null, $separator = null, $default = null, $description = '')
+    public static function array(Syntax $syntax = null, string $separator = null) : ArraySyntax
     {
-        return new ArraySyntax($syntax, $separator, $default, $description);
+        return new ArraySyntax($syntax, $separator);
     }
 
-    public static function obj($fields = [], $separator = null, $default = null, $description = '')
+    public static function object(array $fields, string $separator = null) : ObjectSyntax
     {
-        return new ObjectSyntax($fields, $separator, $default, $description);
+        return new ObjectSyntax($fields, $separator);
     }
 
-    public static function syntax($default = null, $description = '')
+    public static function optional(Syntax $syntax, $default) : OptionalSyntax
     {
-        return new SyntaxSyntax($default, $description);
+        return new OptionalSyntax($syntax, $default);
     }
 
-    public static function fromString($text)
+    public static function syntax() : SyntaxSyntax
     {
-        return (new SyntaxSyntax)->parse($text);
+        return SyntaxSyntax::instance();
     }
 
 }

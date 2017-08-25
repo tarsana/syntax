@@ -1,39 +1,30 @@
-<?php
+<?php namespace Tarsana\Syntax\UnitTests;
 
 use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax\NumberSyntax;
 
-class NumberSyntaxTest extends PHPUnit_Framework_TestCase {
+class NumberSyntaxTest extends TestCase {
 
     public function test_parse() {
-        $syntax = S::number();
-
-        $this->assertTrue(12 === $syntax->parse('12'));
-        $this->assertTrue(0.12 === $syntax->parse('0.12'));
-        $this->assertTrue(-0.2 === $syntax->parse('-0.20'));
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_wrong_number() {
-        $syntax = S::number();
-        $syntax->parse('t56');
+        $this->assertParse(S::number(), [
+            ['input' => '12', 'result' => 12],
+            ['input' => '0.12', 'result' => 0.12],
+            ['input' => '-0.20', 'result' => -0.2],
+            ['input' => 't56', 'errors' => [
+                'Error while parsing \'t56\' as Number at character 0: ' . NumberSyntax::ERROR
+            ]],
+        ]);
     }
 
     public function test_dump() {
-        $syntax = S::number();
-        $this->assertTrue('12' === $syntax->dump(12));
-        $this->assertTrue('0.23' === $syntax->dump(0.23));
-        $this->assertTrue('-2' === $syntax->dump(-2));
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\DumpException
-     */
-    public function test_dump_wrong_boolean() {
-        $syntax = S::number();
-        $this->assertFalse($syntax->canDump('nan'));
-        $syntax->dump('nan');
+        $this->assertDump(S::number(), [
+            ['input' => 12, 'result' => '12'],
+            ['input' => 0.12, 'result' => '0.12'],
+            ['input' => -0.2, 'result' => '-0.2'],
+            ['input' => 'nan', 'errors' => [
+                'Error while dumping some input as Number: ' . NumberSyntax::ERROR
+            ]],
+        ]);
     }
 
 }

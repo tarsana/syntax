@@ -1,330 +1,176 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Functional as F;
+use Tarsana\Syntax\BooleanSyntax;
+use Tarsana\Syntax\Exceptions\DumpException;
+use Tarsana\Syntax\Exceptions\ParseException;
 use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\OptionalSyntax;
+use Tarsana\Syntax\StringSyntax;
 
 /**
  * This syntax generates a Syntax from a string.
- * It supports the following Synatxes:
- *     - StringSyntax   [a-zA-Z_-]*
- *     - NumberSyntax   #string
- *     - BooleanSyntax  string?
- *     - ArraySyntax    type[separator]
- *     - ObjectSyntax   string{separator,field1,field2,...}
  */
 class SyntaxSyntax extends Syntax {
 
-    /**
-     * The default array separator.
-     * @var string
-     */
-    protected $arraySeparator;
+    protected static $instance = null;
 
-    /**
-     * The default object separator.
-     * @var string
-     */
-    protected $objectSeparator;
+    protected $objectSyntax;
+    protected $optionalSyntax;
+    protected $arraySyntax;
 
-    /**
-     * The object fields separator.
-     * @var string
-     */
-    protected $fieldsSeparator;
-
-    /**
-     * Creates a new SyntaxSyntax instance.
-     */
-    public function __construct()
+    public static function instance() : SyntaxSyntax
     {
-        parent::__construct();
-
-        $this->arraySeparator(',')
-            ->objectSeparator(':')
-            ->fieldsSeparator(',');
+        if (self::$instance === null)
+            self::$instance = new SyntaxSyntax;
+        return self::$instance;
     }
 
-    /**
-     * arraySeparator getter and setter.
-     *
-     * @param  string
-     * @return mixed
-     */
-    public function arraySeparator($value = null)
+
+    private function __construct() {
+        // (type:default)
+        $this->optionalSyntax = S::object([
+            'type'    => S::string(),
+            'default' => S::string()
+        ]);
+
+        // [type|separator]
+        $this->arraySyntax = S::object([
+            'type' => S::optional(S::string(), 'string'),
+            'separator' => S::optional(S::string(), ArraySyntax::DEFAULT_SEPARATOR)
+        ])->separator('|');
+
+        // {name:type, name:type, ...|separator}
+        $this->objectSyntax = S::object([
+            'fields' => S::array(S::object([
+                'name' => S::string(),
+                'type' => S::optional(S::string(), 'string')
+            ])),
+            'separator' => S::optional(S::string(), ObjectSyntax::DEFAULT_SEPARATOR)
+        ])->separator('|');
+    }
+
+    public function __toString() : string
     {
-        if (null === $value) {
-            return $this->arraySeparator;
+        return 'Syntax';
+    }
+
+    public function parse(string $text) : Syntax
+    {
+        $text = trim($text);
+
+        if ($text === '' || $text === 'string')
+            return S::string();
+
+        if ($text === 'number')
+            return S::number();
+
+        if ($text === 'boolean')
+            return S::boolean();
+
+        $length = strlen($text);
+        if ($length >= 2) {
+            $wrappers = substr($text, 0, 1) . substr($text, -1);
+            $inner    = substr($text, 1, strlen($text) - 2);
+
+            if ($wrappers == '[]')
+                return $this->parseArray($inner);
+
+            if ($wrappers == '()')
+                return $this->parseOptional($inner);
+
+            if ($wrappers == '{}')
+                return $this->parseObject($inner);
         }
-        $this->arraySeparator = $value;
-        return $this;
+
+        throw new ParseException($this, $text, 0, "Invalid syntax");
     }
 
-    /**
-     * objectSeparator getter and setter.
-     *
-     * @param  string
-     * @return mixed
-     */
-    public function objectSeparator($value = null)
+    public function decode(string $value)
     {
-        if (null === $value) {
-            return $this->objectSeparator;
-        }
-        $this->objectSeparator = $value;
-        return $this;
+        return json_decode($value);
     }
 
-    /**
-     * fieldsSeparator getter and setter.
-     *
-     * @param  string
-     * @return mixed
-     */
-    public function fieldsSeparator($value = null)
+    public function encode($value) : string
     {
-        if (null === $value || $value == '') {
-            return $this->fieldsSeparator;
-        }
-        $this->fieldsSeparator = F\head($value);
-        return $this;
+        return json_encode($value);
     }
 
-    /**
-     * Returns the string representation of the syntax.
-     *
-     * @return string
-     */
-    public function __toString()
+    protected function parseOptional(string $text) : OptionalSyntax
     {
-        return 'syntax';
+        $optional = $this->optionalSyntax->parse($text);
+
+        if ($optional->type == 'string')
+            $optional->default = "\"{$optional->default}\"";
+
+        return S::optional(
+            $this->parse($optional->type),
+            $this->decode($optional->default)
+        );
     }
 
-    /**
-     * Checks if the provided string can be parsed as syntax.
-     *
-     * @param  string $text
-     * @return array
-     */
-    public function checkParse($text)
+    protected function parseArray(string $text) : ArraySyntax
     {
-        $txt = $text;
-        if(F\head($txt) == '[' && F\last($txt) == ']')
-            $txt = F\init(F\tail($txt));
-        if($this->isString($txt)
-            || $this->isNumber($txt)
-            || $this->isBoolean($txt)
-            || $this->isArray($txt)
-            || $this->isObject($txt))
-            return [];
-        return ["Unable to parse '{$text}' as syntax"];
+        $array = $this->arraySyntax->parse($text);
+
+        return S::array($this->parse($array->type), $array->separator);
     }
 
-    protected function isString ($text)
+    protected function parseObject(string $text) : ObjectSyntax
     {
-        return F\test('/^[a-zA-Z-_]*$/', $text);
-    }
-
-    protected function parseString ($text)
-    {
-        $default = null;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\tail(F\init($text));
-            $default = '';
-        }
-        return S::string($default, $text);
-    }
-
-    protected function isNumber ($text)
-    {
-        return F\head($text) == '#' && $this->isString(F\tail($text));
-    }
-
-    protected function parseNumber ($text)
-    {
-        $default = null;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\init(F\tail($text));
-            $default = '';
-        }
-        return S::number($default, F\tail($text));
-    }
-
-    protected function isBoolean ($text)
-    {
-        return F\last($text) == '?' && $this->isString(F\init($text));
-    }
-
-    protected function parseBoolean ($text)
-    {
-        $default = null;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\init(F\tail($text));
-            $default = '';
-        }
-        return S::boolean($default, F\init($text));
-    }
-
-    protected function isArray ($text)
-    {
-        $results = [];
-        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
-        if ($count < 1)
-            return false;
-        return 0 == count($this->checkParse($results[1][0]));
-    }
-
-    protected function parseArray ($text)
-    {
-        $default = null;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\init(F\tail($text));
-            $default = '';
-        }
-        $results = [];
-        $count = preg_match_all('/^(.*)\[([^[]*)\]$/', $text, $results);
-        if ($count < 1)
-            return null;
-        $type = $this->doParse($results[1][0]);
-        $separator = $results[2][0];
-        if (empty($separator))
-            $separator = $this->arraySeparator;
-        return S::arr($type, $separator, $default, $type->description());
-    }
-
-    protected function isObject ($text)
-    {
-        $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^'.$this->fieldsSeparator.'a-zA-Z0-9\[]+)?'.$this->fieldsSeparator.'?(.*)\}$/', $text, $results);
-        if ($count < 1) {
-            return false;
-        }
-        $fields = trim($results[3][0]);
-        if ($fields === '') {
-            return true;
-        }
-        $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
-        foreach ($fields as $field) {
-            $field = trim($field);
-            if(F\head($field) == '[' && F\last($field) == ']') {
-                $field = F\init(F\tail(trim($field)));
-            }
-            if (! $this->canParse($field))
-                return false;
-        }
-        return true;
-    }
-
-    protected function parseObject ($text)
-    {
-        $default = null;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $text = F\init(F\tail($text));
-            $default = '';
-        }
-        $results = [];
-        $count = preg_match_all('/^([a-zA-Z_-]*)\{([^,a-zA-Z0-9\[]+)?,?(.*)\}$/', $text, $results);
-        if ($count < 1)
-            return null;
+        $object = $this->objectSyntax->parse($text);
 
         $fields = [];
-        if (trim($results[3][0]) != '') {
-            $fields = F\chunks('(){}[]""', $this->fieldsSeparator, $results[3][0]);
-            $fields = F\reduce(function($results, $item){
-                $item = $this->doParse(trim($item));
-                $results[$item->description()] = $item;
-                return $results;
-            }, [], $fields);
+        foreach ($object->fields as $field) {
+            $fields[trim($field->name)] = $this->parse($field->type);
         }
 
-        $separator = $results[2][0];
-        if(empty($separator))
-            $separator = $this->objectSeparator;
-
-        return S::obj($fields, $separator, $default, $results[1][0]);
+        return S::object($fields, $object->separator);
     }
 
-    /**
-     * Transforms a string to syntax.
-     *
-     * @param  string $text the string to parse
-     * @return Tarsana\Syntax\Syntax
-     */
-    protected function doParse($text)
+    public function dump($value) : string
     {
-        $txt = $text;
-        if(F\head($text) == '[' && F\last($text) == ']') {
-            $txt = F\init(F\tail($text));
-        }
-        if ($this->isObject($txt))
-            return $this->parseObject($text);
-        if ($this->isArray($txt))
-            return $this->parseArray($text);
-        if ($this->isNumber($txt))
-            return $this->parseNumber($text);
-        if ($this->isBoolean($txt))
-            return $this->parseBoolean($text);
-        if ($this->isString($txt))
-            return $this->parseString($text);
-        return null;
-    }
-
-    /**
-     * Checks if the provided argument can be dumped as syntax.
-     *
-     * @param  mixed $value
-     * @return array
-     */
-    public function checkDump($value)
-    {
-        if ($value instanceof StringSyntax ||
-            $value instanceof NumberSyntax ||
-            $value instanceof BooleanSyntax ||
-            $value instanceof ArraySyntax ||
-            $value instanceof ObjectSyntax
-        )
-            return [];
-        return ["Unable to dump '{$value}' as syntax"];
-    }
-
-    /**
-     * Converts the given syntax to a string.
-     *
-     * @param  Tarsana\Syntax\Syntax $value the data to encode
-     * @return string
-     */
-    protected function doDump($value)
-    {
-        $result = '';
+        if (! ($value instanceof Syntax))
+            throw new DumpException($this, $value, "Not a syntax");
 
         if ($value instanceof StringSyntax)
-            $result = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-        else if ($value instanceof NumberSyntax)
-            $result = '#' . F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-        else if ($value instanceof BooleanSyntax)
-            $result = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description()) . '?';
-        else if ($value instanceof ArraySyntax) {
-            $item = $value->itemSyntax();
-            $oldDescription = $item->description();
-            $text = $this->dump($item->description($value->description()));
-            $item->description($oldDescription);
-            $result = "{$text}[{$value->separator()}]";
+            return 'string';
+
+        if ($value instanceof NumberSyntax)
+            return 'number';
+
+        if ($value instanceof BooleanSyntax)
+            return 'boolean';
+
+        if ($value instanceof ArraySyntax) {
+            $array = [
+                'type' => $this->dump($value->syntax()),
+                'separator' => $value->separator()
+            ];
+            return '['.$this->arraySyntax->dump($array).']';
         }
-        else if ($value instanceof ObjectSyntax) {
+
+        if ($value instanceof OptionalSyntax) {
+            $optional = [
+                'type' => $this->dump($value->syntax()),
+                'default' => $this->encode($value->getDefault())
+            ];
+            return '('.$this->optionalSyntax->dump($optional).')';
+        }
+
+        if ($value instanceof ObjectSyntax) {
             $fields = [];
-            foreach ($value->fields() as $name => $item) {
-                $oldDescription = $item->description();
-                $item->description($name);
-                $fields[] = $this->dump($item);
-                $item->description($oldDescription);
+            foreach($value->fields() as $name => $syntax) {
+                $fields[] = (object) [
+                    'name' => $name,
+                    'type' => $this->dump($syntax)
+                ];
             }
-            $fields = F\join($this->fieldsSeparator, $fields);
-            $name = F\regReplace('/[^a-zA-Z-_]+/', '', $value->description());
-            $result = "{$name}{{$value->separator()}{$this->fieldsSeparator}{$fields}}";
+            $object = ['fields' => $fields, 'separator' => $value->separator()];
+
+            return '{'.$this->objectSyntax->dump($object).'}';
         }
 
-        if (! $value->isRequired())
-            $result = "[{$result}]";
-
-        return $result;
+        throw new DumpException($this, $value, "Unknown syntax");
     }
 }

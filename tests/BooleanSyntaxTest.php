@@ -1,42 +1,28 @@
-<?php
+<?php namespace Tarsana\Syntax\UnitTests;
 
+use Tarsana\Syntax\BooleanSyntax;
 use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax\UnitTests\TestCase;
 
-class BooleanSyntaxTest extends PHPUnit_Framework_TestCase {
+class BooleanSyntaxTest extends TestCase {
 
     public function test_parse() {
-        $syntax = S::boolean();
-        $trueInputs = ['true', 'yes', 'TRue', 'yeS', 'Y'];
-        $falseInputs = ['false', 'no', 'No', 'N'];
-        foreach ($trueInputs as $input) {
-            $this->assertTrue($syntax->parse($input));
-        }
-        foreach ($falseInputs as $input) {
-            $this->assertFalse($syntax->parse($input));
-        }
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_wrong_boolean() {
-        $syntax = S::boolean();
-        $syntax->parse('wrong boolean');
+        $this->assertParse(S::boolean(), [
+            ['input' => ['true', 'yes', 'TRue', 'yeS', 'Y'], 'result' => true],
+            ['input' => ['false', 'no', 'No', 'N'], 'result' => false],
+            ['input'  => 'wrong boolean', 'errors' => [
+                "Error while parsing 'wrong boolean' as Boolean at character 0: " . BooleanSyntax::PARSE_ERROR
+            ]]
+        ]);
     }
 
     public function test_dump() {
-        $syntax = S::boolean();
-        $this->assertEquals('true', $syntax->dump(true));
-        $this->assertEquals('false', $syntax->dump(false));
+        $this->assertDump(S::boolean(), [
+            ['input'  => true, 'result' => 'true'],
+            ['input'   => false, 'result' => 'false'],
+            ['input'   => [15, 'string'], 'errors'  => [
+                'Error while dumping some input as Boolean: ' . BooleanSyntax::DUMP_ERROR
+            ]]
+        ]);
     }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\DumpException
-     */
-    public function test_dump_wrong_boolean() {
-        $syntax = S::boolean();
-        $this->assertFalse($syntax->canDump('boolean'));
-        $syntax->dump('boolean');
-    }
-
 }

@@ -1,6 +1,6 @@
 /vendor
 composer.phar
-composer.lock
 /packages
 *.sublime-*
 /about
+build

@@ -1,18 +1,18 @@
-<?php
+<?php namespace Tarsana\Syntax\UnitTests;
 
-use Tarsana\Syntax\StringSyntax;
-use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\ArraySyntax;
+use Tarsana\Syntax\BooleanSyntax;
 use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax\NumberSyntax;
+use Tarsana\Syntax\ObjectSyntax;
+use Tarsana\Syntax\StringSyntax;
 
-class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
+class ObjectSyntaxTest extends TestCase {
 
     public function test_getters_and_setters()
     {
-        $syntax = S::obj()
-            ->separator('|')
-            ->fields([
-                'name' => S::string()
-            ])
+        $syntax = (new ObjectSyntax(['name' => S::array()], '|'))
+            ->fields(['name' => S::string()])
             ->field('age', S::number());
 
         $fields = $syntax->fields();
@@ -22,330 +22,239 @@ class ObjectSyntaxTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue( $syntax->field('age') instanceof NumberSyntax);
     }
 
+    public function test_get_nested_fields()
+    {
+        $syntax = S::object([
+            'name' => S::string(),
+            'repos' => S::array(S::object([
+                'name' => S::string(),
+                'stars' => S::number(),
+            ])),
+            'profile' => S::object([
+                'active' => S::boolean(),
+                'balance' => S::number()
+            ])
+        ]);
+
+        $this->assertTrue($syntax->field('repos') instanceof ArraySyntax);
+        $this->assertTrue($syntax->field('repos.syntax') instanceof ObjectSyntax);
+        $this->assertTrue($syntax->field('repos.syntax.stars') instanceof NumberSyntax);
+        $this->assertTrue($syntax->field('profile.active') instanceof BooleanSyntax);
+    }
+
     /**
-     * @expectedException Tarsana\Syntax\Exceptions\Exception
+     * @expectedException InvalidArgumentException
+     */
+    public function test_construct_without_fields()
+    {
+        new ObjectSyntax([]);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
      */
     public function test_get_unknown_field()
     {
-        $syntax = S::obj()
+        $syntax = S::object(['name' => S::string()])
             ->separator('|')
-            ->fields([
-                'name' => S::string()
-            ])
             ->field('age', S::number());
 
         $syntax->field('account');
     }
 
-    public function test_parse() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-
-        $object = (object) [
-            'name' => 'Foo',
-            'age' => 76,
-            'is_programmer' => false,
-            'friends' => ['Bar', 'Baz']
-        ];
-
-        $this->assertEquals($object, $syntax->parse('Foo:76:no:Bar,Baz'));
-    }
-
-    public function test_parse_empty_object() {
-        $this->assertEquals((object) [], S::obj([])->parse(''));
-    }
-
     public function test_to_string() {
-        $syntax = S::obj([
+        $syntax = S::object([
             'name' => S::string(),
             'age' => S::number(),
             'is_programmer' => S::boolean(),
-            'friends' => S::arr()
+            'friends' => S::array()
         ]);
-        $this->assertEquals("object {name: (string), age: (number), is_programmer: (boolean), friends: (array of (string) separated by ',')} separated by ':'", "{$syntax}");
+        $this->assertEquals("Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':'", "{$syntax}");
     }
 
-    public function test_parse_custom_separator() {
-        $syntax = S::obj([
+    public function test_parse_all_fields_are_required() {
+        // Parsing all required fields
+        $syntax = S::object([
             'name' => S::string(),
             'age' => S::number(),
             'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ], '|');
+            'friends' => S::array()
+        ]);
 
-        $object = (object) [
-            'name' => 'Foo',
-            'age' => 76,
-            'is_programmer' => false,
-            'friends' => ['Bar', 'Baz']
-        ];
+        $this->assertParse($syntax, [[
+            'input'  => 'Foo:76:no:Bar,Baz',
+            'result' => (object) [
+                'name' => 'Foo',
+                'age' => 76,
+                'is_programmer' => false,
+                'friends' => ['Bar', 'Baz']
+            ]
+        ], [
+            'input'  => '"Foo:Bar:Baz":76:no:"Bar,Baz",lorem',
+            'result' => (object) [
+                'name' => 'Foo:Bar:Baz',
+                'age' => 76,
+                'is_programmer' => false,
+                'friends' => ['Bar,Baz', 'lorem']
+            ]
+        ], [
+            'input'  => 'Foo:76::Bar,Baz',
+            'errors' => [
+                "Error while parsing 'Foo:76::Bar,Baz' as Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':' at character 7: Unable to parse the item '' for field 'is_programmer'",
+                "Error while parsing '' as Boolean at character 0: " . BooleanSyntax::PARSE_ERROR
+            ]
+        ], [
+            'input'  => 'Foo:76:false:Bar,Baz:additional',
+            'errors' => [
+                "Error while parsing 'Foo:76:false:Bar,Baz:additional' as Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':' at character 20: Additional items with no corresponding fields"
+            ]
+        ]]);
 
-        $this->assertEquals($object, $syntax->parse('Foo|76|false|Bar,Baz'));
+        // Changing the separator
+        $syntax->separator('||');
+        $this->assertParse($syntax, [[
+            'input'  => 'Foo||76||no||Bar,Baz',
+            'result' => (object) [
+                'name' => 'Foo',
+                'age' => 76,
+                'is_programmer' => false,
+                'friends' => ['Bar', 'Baz']
+            ]
+        ], [
+            'input'  => 'Foo||76||||Bar,Baz',
+            'errors' => [
+                "Error while parsing 'Foo||76||||Bar,Baz' as Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by '||' at character 9: Unable to parse the item '' for field 'is_programmer'",
+                "Error while parsing '' as Boolean at character 0: " . BooleanSyntax::PARSE_ERROR
+            ]
+        ]]);
+    }
+
+    public function test_parse_all_fields_are_optional() {
+        // Optional Fields
+        $syntax = S::object([
+            'name' => S::optional(S::string(), 'Unknown'),
+            'age' => S::optional(S::number(), 21),
+            'is_programmer' => S::optional(S::boolean(), false),
+            'friends' => S::optional(S::array(), [])
+        ]);
+
+        $this->assertParse($syntax, [[
+            'input'  => 'Foo:76:no:Bar,Baz',
+            'result' => (object) [
+                'name' => 'Foo',
+                'age' => 76,
+                'is_programmer' => false,
+                'friends' => ['Bar', 'Baz']
+            ]
+        ], [
+            'input'  => '',
+            'result' => (object) [
+                'name' => 'Unknown',
+                'age' => 21,
+                'is_programmer' => false,
+                'friends' => []
+            ]
+        ], [
+            'input'  => 'Me:yes',
+            'result' => (object) [
+                'name' => 'Me',
+                'age' => 21,
+                'is_programmer' => true,
+                'friends' => []
+            ]
+        ], [
+            'input'  => '27:23:yes',
+            'result' => (object) [
+                'name' => '27',
+                'age' => 23,
+                'is_programmer' => true,
+                'friends' => []
+            ]
+        ], [
+            'input'  => 'Me:code',
+            'result' => (object) [
+                'name' => 'Me',
+                'age' => 21,
+                'is_programmer' => false,
+                'friends' => ['code']
+            ]
+        ]]);
     }
 
     public function test_parse_with_optional_fields() {
-        $syntax = S::obj([
+        $syntax = S::object([
             'name' => S::string(),
-            'is_programmer' => S::boolean(false),
+            'is_programmer' => S::optional(S::boolean(), false),
             'age' => S::number(),
-            'friends' => S::arr(S::string(), ',', [])
+            'friends' => S::optional(S::array(), [])
         ]);
 
-        $object = (object) [
-            'name' => 'Foo',
-            'is_programmer' => false,
-            'age' => 76,
-            'friends' => ['Bar', 'Baz']
-        ];
-        $this->assertEquals($object, $syntax->parse('Foo:76:Bar,Baz'));
-
-        $object = (object) [
-            'name' => 'Foo',
-            'is_programmer' => true,
-            'age' => 76,
-            'friends' => []
-        ];
-        $this->assertEquals($object, $syntax->parse('Foo:yes:76'));
-    }
-
-    public function test_parse_complex_object() {
-        $test = $this->getComplexTestCase();
-
-        $this->assertEquals($test['object'], $test['syntax']->parse($test['text']));
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_missing_fields() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-        $syntax->parse('Foo:23:yes');
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_missing_required_fields() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(23),
-            'is_programmer' => S::boolean(false),
-            'friends' => S::arr()
-        ]);
-        $syntax->parse('Foo:5:yes');
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_too_much_items() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-        $syntax->parse('Foo:5:yes:Bar,Baz:additional');
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_wrong_required_field() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-        $syntax->parse('Foo:weird:yes:Bar,Baz');
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\ParseException
-     */
-    public function test_parse_missing_required_fields_at_the_end() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(23),
-            'is_programmer' => S::boolean(false),
-            'friends' => S::arr()
-        ]);
-        $syntax->parse('Foo:29:yes');
+        $this->assertParse($syntax, [[
+            'input'  => 'Foo:76:Bar,Baz',
+            'result' => (object) [
+                'name' => 'Foo',
+                'is_programmer' => false,
+                'age' => 76,
+                'friends' => ['Bar', 'Baz']
+            ]
+        ], [
+            'input'  => 'Foo:yes:76',
+            'result' => (object) [
+                'name' => 'Foo',
+                'is_programmer' => true,
+                'age' => 76,
+                'friends' => []
+            ]
+        ], [
+            'input'  => 'Foo:yes:Bar,Baz',
+            'errors' => [
+                "Error while parsing 'Foo:yes:Bar,Baz' as Object {name: String, is_programmer: Optional Boolean, age: Number, friends: Optional Array of (String) separated by ','} separated by ':' at character 8: Unable to parse the item 'Bar,Baz' for field 'age'",
+                "Error while parsing 'Bar,Baz' as Number at character 0: " . NumberSyntax::ERROR
+            ]
+        ], [
+            'input'  => 'Foo:yes',
+            'errors' => [
+                "Error while parsing 'Foo:yes' as Object {name: String, is_programmer: Optional Boolean, age: Number, friends: Optional Array of (String) separated by ','} separated by ':' at character 8: No item left for field 'age'"
+            ]
+        ]]);
     }
 
     public function test_dump() {
-        $syntax = S::obj([
+        $syntax = S::object([
             'name' => S::string(),
             'age' => S::number(),
             'is_programmer' => S::boolean(),
-            'friends' => S::arr()
+            'friends' => S::array()
         ]);
 
-        $object = (object) [
-            'name' => 'Foo',
-            'age' => 76,
-            'is_programmer' => false,
-            'friends' => ['Bar', 'Baz']
-        ];
-
-        $this->assertEquals('Foo:76:false:Bar,Baz', $syntax->dump($object));
-    }
-
-    public function test_dump_complex_object() {
-        $test = $this->getComplexTestCase();
-
-        $this->assertEquals($test['full_text'], $test['syntax']->dump($test['object']));
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\DumpException
-     */
-    public function test_dump_missing_field() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-
-        $object = (object) [
-            'name' => 'Foo',
-            'age' => 76,
-            'friends' => ['Bar', 'Baz']
-        ];
-
-        $syntax->dump($object);
-    }
-
-    /**
-     * @expectedException Tarsana\Syntax\Exceptions\DumpException
-     */
-    public function test_dump_wrong_field() {
-        $syntax = S::obj([
-            'name' => S::string(),
-            'age' => S::number(),
-            'is_programmer' => S::boolean(),
-            'friends' => S::arr()
-        ]);
-
-        $object = (object) [
-            'name' => 'Foo',
-            'age' => 'weird',
-            'is_programmer' => false,
-            'friends' => ['Bar', 'Baz']
-        ];
-
-        $this->assertFalse($syntax->canDump($object));
-        $syntax->dump($object);
-    }
-
-    protected function getComplexTestCase() {
-
-        $text = "Student Agent Smart,Stupid\n" .
-                "name:string:public age:int year:int:protected,get:1 ".
-                "count:int:static,protected,get:0\n" .
-                'speak:void canLearn:bool:s|Subject|"math":protected';
-
-        $fullText = "Student Agent Smart,Stupid\n" .
-                "name:string:public: age:int:private,get,set: year:int:protected,get:1 ".
-                "count:int:static,protected,get:0\n" .
-                'speak:void::public canLearn:bool:s|Subject|"math":protected';
-
-        $syntax = S::obj([
-            'names' => S::obj([
-                'class_name' => S::string(),
-                'parents' => S::arr(S::string(), ',', []),
-                'interfaces' => S::arr(S::string(), ',', [])
-            ], ' '),
-            'attrs' => S::arr(S::obj([
-                'name' => S::string(),
-                'type' => S::string(),
-                'flags' => S::arr(S::string(), ',', ['private', 'get', 'set']),
-                'default' => S::string('')
-            ]), ' '),
-            'methods' => S::arr(S::obj([
-                'name' => S::string(),
-                'return' => S::string(),
-                'args' => S::arr(S::obj([
-                    'name' => S::string(),
-                    'type' => S::string(),
-                    'default' => S::string('')
-                ], '|'), ',', []),
-                'flags' => S::arr(S::string(), ',', ['public'])
-            ]), ' '),
-        ], "\n");
-
-        $object = (object) [
-            'names' => (object) [
-                'class_name' => 'Student',
-                'parents' => ['Agent'],
-                'interfaces' => ['Smart', 'Stupid']
+        $this->assertDump($syntax, [[
+            'input'  => (object) [
+                'name' => 'Foo',
+                'age'  => 76,
+                'is_programmer' => false,
+                'friends' => ['Bar', 'Baz']
             ],
-            'attrs' => [
-                (object) [
-                    'name' => 'name',
-                    'type' => 'string',
-                    'flags' => ['public'],
-                    'default' => ''
-                ],
-                (object) [
-                    'name' => 'age',
-                    'type' => 'int',
-                    'flags' => ['private', 'get', 'set'],
-                    'default' => ''
-                ],
-                (object) [
-                    'name' => 'year',
-                    'type' => 'int',
-                    'flags' => ['protected', 'get'],
-                    'default' => '1'
-                ],
-                (object) [
-                    'name' => 'count',
-                    'type' => 'int',
-                    'flags' => ['static', 'protected', 'get'],
-                    'default' => '0'
-                ]
+            'result' => 'Foo:76:false:Bar,Baz'
+        ], [
+            'input'  => (object) [
+                'name' => 'Foo',
+                'age'  => 76,
+                'friends' => ['Bar', 'Baz']
             ],
-            'methods' => [
-                (object) [
-                    'name' => 'speak',
-                    'return' => 'void',
-                    'args' => [],
-                    'flags' => ['public']
-                ],
-                (object) [
-                    'name' => 'canLearn',
-                    'return' => 'bool',
-                    'args' => [
-                        (object) [
-                            'name' => 's',
-                            'type' => 'Subject',
-                            'default' => '"math"'
-                        ]
-                    ],
-                    'flags' => ['protected']
-                ]
+            'errors' => [
+                "Error while dumping some input as Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':': Missing field 'is_programmer'"
             ]
-        ];
+        ], [
+            'input'  => (object) [
+                'name' => 'Foo',
+                'age'  => 'Yo',
+                'friends' => ['Bar', 'Baz']
+            ],
+            'errors' => [
+                "Error while dumping some input as Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':': Unable to dump the field 'age'",
+                "Error while dumping some input as Number: " . NumberSyntax::ERROR
+            ]
+        ]]);
 
-
-        return [
-            'syntax' => $syntax,
-            'object' => $object,
-            'text' => $text,
-            'full_text' => $fullText
-        ];
     }
-
 }
