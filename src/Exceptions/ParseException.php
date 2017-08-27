@@ -6,12 +6,13 @@ class ParseException extends Exception {
 
     protected $position;
 
-    public function __construct(Syntax $syntax, string $input, int $position, string $message, $previous = null)
+    public function __construct(Syntax $syntax, string $input, int $position, string $message, array $extra = [], $previous = null)
     {
         parent::__construct(
             $syntax,
             $input,
             "Error while parsing '{$input}' as {$syntax} at character {$position}: {$message}",
+            $extra,
             $previous
         );
         $this->position = $position;

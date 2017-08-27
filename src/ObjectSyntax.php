@@ -1,6 +1,5 @@
 <?php namespace Tarsana\Syntax;
 
-use Tarsana\Syntax\Debugger;
 use Tarsana\Syntax\Exceptions\DumpException;
 use Tarsana\Syntax\Exceptions\Exception;
 use Tarsana\Syntax\Exceptions\ParseException;
@@ -8,7 +7,7 @@ use Tarsana\Syntax\OptionalSyntax;
 use Tarsana\Syntax\Syntax;
 
 /**
- * Represents an couple of values with differeny syntaxes.
+ * Represents an couple of values with different syntaxes.
  */
 class ObjectSyntax extends Syntax {
 
@@ -162,16 +161,32 @@ class ObjectSyntax extends Syntax {
                 $nameIndex ++;
             }
         } catch (ParseException $e) {
-            if ($itemIndex < $itemsCount)
+            if ($itemIndex < $itemsCount) {
                 $error = "Unable to parse the item '{$items[$itemIndex]}' for field '{$names[$nameIndex]}'";
-            else
+                $extra = [
+                    'type'  => 'invalid-field',
+                    'field' => $names[$nameIndex],
+                    'text'  => $items[$itemIndex]
+                ];
+            } else {
                 $error = "No item left for field '{$names[$nameIndex]}'";
-            throw new ParseException($this, $text, $index + $e->position(), $error, $e);
+                $extra = [
+                    'type'  => 'missing-field',
+                    'field' => $names[$nameIndex],
+                    'position' => $e->position()
+                ];
+            }
+            throw new ParseException($this, $text, $index + $e->position(), $error, $extra, $e);
         }
 
-        if ($itemsLeft)
+        if ($itemsLeft) {
+            $extra = [
+                'type'  => 'additional-items',
+                'items' => array_slice($items, $itemIndex)
+            ];
             throw new ParseException($this, $text, $index - $separatorLength,
-                "Additional items with no corresponding fields");
+                "Additional items with no corresponding fields", $extra);
+        }
 
         return (object) $result;
     }
@@ -201,7 +216,7 @@ class ObjectSyntax extends Syntax {
                 $result[] = $syntax->dump($value[$name]);
             }
         } catch (DumpException $e) {
-            throw new DumpException($this, $value, "Unable to dump the field '{$current}'", $e);
+            throw new DumpException($this, $value, "Unable to dump the field '{$current}'", [], $e);
         }
 
         if ($missingField)

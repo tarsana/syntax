@@ -100,8 +100,13 @@ class ArraySyntax extends Syntax {
                 $index += strlen($item) + 1;
             }
         } catch (ParseException $e) {
+            $extra = [
+                'type' => 'invalid-item',
+                'item' => $item,
+                'position' => $e->position()
+            ];
             throw new ParseException($this, $text, $index + $e->position(),
-                "Unable to parse the item '{$item}'", $e
+                "Unable to parse the item '{$item}'", $extra, $e
             );
         }
 
@@ -129,7 +134,7 @@ class ArraySyntax extends Syntax {
                 $items[] = $this->syntax->dump($value);
             }
         } catch (DumpException $e) {
-            throw new DumpException($this, $values, "Unable to dump item at key {$index}", $e);
+            throw new DumpException($this, $values, "Unable to dump item at key {$index}", [], $e);
         }
 
         return Text::join($items, $this->separator);
