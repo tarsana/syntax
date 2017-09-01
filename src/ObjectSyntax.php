@@ -89,9 +89,10 @@ class ObjectSyntax extends Syntax {
             $names = explode('.', $name);
             $syntax = $this;
             foreach ($names as $field) {
-                if ($field == 'syntax' && method_exists($syntax, 'syntax')) {
+                while (method_exists($syntax, 'syntax')) {
                     $syntax = $syntax->syntax();
-                } else if ($syntax instanceof ObjectSyntax && array_key_exists($field, $syntax->fields)) {
+                }
+                if ($syntax instanceof ObjectSyntax && array_key_exists($field, $syntax->fields)) {
                     $syntax = $syntax->fields[$field];
                 } else {
                     throw new \InvalidArgumentException("field '{$name}' not found");

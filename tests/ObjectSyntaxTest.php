@@ -37,8 +37,7 @@ class ObjectSyntaxTest extends TestCase {
         ]);
 
         $this->assertTrue($syntax->field('repos') instanceof ArraySyntax);
-        $this->assertTrue($syntax->field('repos.syntax') instanceof ObjectSyntax);
-        $this->assertTrue($syntax->field('repos.syntax.stars') instanceof NumberSyntax);
+        $this->assertTrue($syntax->field('repos.stars') instanceof NumberSyntax);
         $this->assertTrue($syntax->field('profile.active') instanceof BooleanSyntax);
     }
 
