@@ -12,6 +12,9 @@ use Tarsana\Syntax\Syntax;
 class ObjectSyntax extends Syntax {
 
     const DEFAULT_SEPARATOR = ':';
+    const MISSING_FIELD     = 'missing-field';
+    const INVALID_FIELD     = 'invalid-field';
+    const ADDITIONAL_ITEMS  = 'additional-items';
 
     /**
      * The string that separates items of the object.
@@ -28,6 +31,15 @@ class ObjectSyntax extends Syntax {
     protected $fields;
 
     /**
+     * Associative array specifying the parsed values of
+     * different fields, with associated errors if any.
+     * ['field' => {value: *, error: string|null}, ...]
+     *
+     * @var array
+     */
+    protected $values;
+
+    /**
      * Creates a new instance of ObjectSyntax.
      *
      * @param array $fields Associative array specifying the fields of the object.
@@ -42,6 +54,7 @@ class ObjectSyntax extends Syntax {
 
         $this->fields = $fields;
         $this->separator = $separator;
+        $this->values = [];
     }
 
     /**
@@ -121,6 +134,33 @@ class ObjectSyntax extends Syntax {
     }
 
     /**
+     * values getter.
+     *
+     * @param  array
+     * @return mixed
+     */
+    public function values()
+    {
+        return $this->values;
+    }
+
+    /**
+     * Clears the parsed values.
+     *
+     * @return void
+     */
+    protected function clearValues()
+    {
+        $this->values = [];
+        foreach ($this->fields as $name => $syntax) {
+            $this->values[$name] = (object) [
+                'value'   => null,
+                'error'   => static::MISSING_FIELD
+            ];
+        }
+    }
+
+    /**
      * Transforms a string to an object based
      * on the fields or throws a ParseException.
      *
@@ -139,12 +179,13 @@ class ObjectSyntax extends Syntax {
         $nameIndex = 0;
         $index = 0;
         $separatorLength = strlen($this->separator);
-        $result = [];
         $itemsLeft = false;
+        $this->clearValues();
         try {
             while ($itemIndex < $itemsCount && $nameIndex < $namesCount) {
                 $syntax = $this->fields[$names[$nameIndex]];
-                $result[$names[$nameIndex]] = $syntax->parse($items[$itemIndex]);
+                $this->values[$names[$nameIndex]]->value = $syntax->parse($items[$itemIndex]);
+                $this->values[$names[$nameIndex]]->error = null;
                 $index += strlen($items[$itemIndex]) + $separatorLength;
                 $nameIndex ++;
                 $itemIndex ++;
@@ -158,11 +199,13 @@ class ObjectSyntax extends Syntax {
             // if fields are left
             while ($nameIndex < $namesCount) {
                 $syntax = $this->fields[$names[$nameIndex]];
-                $result[$names[$nameIndex]] = $syntax->parse('');
+                $this->values[$names[$nameIndex]]->value = $syntax->parse('');
+                $this->values[$names[$nameIndex]]->error = null;
                 $nameIndex ++;
             }
         } catch (ParseException $e) {
             if ($itemIndex < $itemsCount) {
+                $this->values[$names[$nameIndex]]->error = static::INVALID_FIELD;
                 $error = "Unable to parse the item '{$items[$itemIndex]}' for field '{$names[$nameIndex]}'";
                 $extra = [
                     'type'  => 'invalid-field',
@@ -170,6 +213,7 @@ class ObjectSyntax extends Syntax {
                     'text'  => $items[$itemIndex]
                 ];
             } else {
+                $this->values[$names[$nameIndex]]->error = static::MISSING_FIELD;
                 $error = "No item left for field '{$names[$nameIndex]}'";
                 $extra = [
                     'type'  => 'missing-field',
@@ -189,7 +233,9 @@ class ObjectSyntax extends Syntax {
                 "Additional items with no corresponding fields", $extra);
         }
 
-        return (object) $result;
+        return (object) array_map(function($field) {
+            return $field->value;
+        }, $this->values);
     }
 
     /**
