@@ -16,7 +16,7 @@ class TestCase extends \PHPUnit\Framework\TestCase {
         if ($expected instanceof Syntax && $actual instanceof Syntax) {
             if (get_class($expected) != get_class($actual))
                 throw new \Exception("'{$expected}' and '{$actual}' are not equal");
-            if ($expected instanceof StringSyntax || $expected instanceof BooleanSyntax || $expected instanceof NumberSyntax)
+            if ($expected instanceof StringSyntax || $expected instanceof BooleanSyntax || $expected instanceof NumberSyntax || $expected instanceof SyntaxSyntax)
                 return;
             if ($expected instanceof OptionalSyntax)
                 return $this->assertEquals($expected->syntax(), $actual->syntax())

@@ -233,7 +233,7 @@ class ObjectSyntax extends Syntax {
                 "Additional items with no corresponding fields", $extra);
         }
 
-        return (object) array_map(function($field) {
+        return (object) array_map(function(\stdClass $field) {
             return $field->value;
         }, $this->values);
     }

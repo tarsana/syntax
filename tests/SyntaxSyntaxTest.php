@@ -55,6 +55,11 @@ class SyntaxSyntaxTest extends TestCase {
         $this->dump($syntax, '(number:false)');
     }
 
+    public function test_syntax() {
+        $this->parse('syntax', S::syntax());
+        $this->dump(S::syntax(), 'syntax');
+    }
+
     public function test_array() {
         $syntax = S::array();
         $this->parse('[]', $syntax);

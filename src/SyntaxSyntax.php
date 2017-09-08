@@ -68,6 +68,9 @@ class SyntaxSyntax extends Syntax {
         if ($text === 'boolean')
             return S::boolean();
 
+        if ($text === 'syntax')
+            return S::syntax();
+
         $length = strlen($text);
         if ($length >= 2) {
             $wrappers = substr($text, 0, 1) . substr($text, -1);
@@ -141,6 +144,9 @@ class SyntaxSyntax extends Syntax {
 
         if ($value instanceof BooleanSyntax)
             return 'boolean';
+
+        if ($value instanceof SyntaxSyntax)
+            return 'syntax';
 
         if ($value instanceof ArraySyntax) {
             $array = [

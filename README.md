@@ -351,6 +351,7 @@ $personSyntax = S::syntax()->parse('{name, age:number, vip:boolean, friends:[]}'
 - `S::string()` is `string`.
 - `S::number()` is `number`.
 - `S::boolean()` is `boolean`.
+- `S::syntax()` is `syntax`.
 - `S::optional($type, $default)` is `(type:default)` where `type` is the string corresponding to `$type` and `default` is `json_encode($default)`.
 - `S::array($type, $separator)` is `[type|separator]` where`type` is the string corresponding to `$type` and `separator` is the same as `$separator`. If the separator is omitted (ie. `[type]`); the default value is `,`.
 t)`.
@@ -388,7 +389,10 @@ S::object([
 
 # Development Notes & Next Steps
 
-- **version 2.0**
+- **version 2.1.0**
+  - `syntax` added to the string representation of a syntax and corresponds to the `S::syntax()` instance.
+
+- **version 2.0.0**
 
   - Separators and default values can be specified when creating syntax from string.
   - Escaping separators is now possible.
