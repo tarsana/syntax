@@ -2,10 +2,9 @@
 
 [![Build Status](https://travis-ci.org/tarsana/syntax.svg?branch=master)](https://travis-ci.org/tarsana/syntax)
 [![Coverage Status](https://coveralls.io/repos/github/tarsana/syntax/badge.svg?branch=master)](https://coveralls.io/github/tarsana/syntax?branch=master)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb/mini.png)](https://insight.sensiolabs.com/projects/8d370ef9-df1b-43c3-8073-9b17870659eb)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/tarsana/syntax/blob/master/LICENSE)
 
-A tool to encode and decode strings based on flexible and composable syntax definitions.
+A Library to encode and decode strings based on flexible and composable syntax definitions.
 
 # Table of Contents
 
@@ -28,9 +27,7 @@ A tool to encode and decode strings based on flexible and composable syntax defi
 
   - [Parsing and Dumping Syntaxes](#parsing-and-dumping-syntaxes) **Since version 1.2.0**
 
-- [Development Notes & Next Steps](#development-notes--next-steps)
-
-- [Contributing](#contributing)
+- [Development Notes](#development-notes)
 
 # Quick Example
 
@@ -56,17 +53,17 @@ Let's do it:
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
 // a repo is an object having a name (string) and stars (number), separated by ':'
-$repo = "{name: string, stars:number}";
+$repo = '{name: string, stars:number}';
 // a line consists of a first and last names, optional number of followers, and repos, separated by space. The repos are separated by ","
 $line = "{first_name, last_name, followers: (number: 0), repos: ([{$repo}]:[]) | }";
 // a document is a list of lines separated by PHP_EOL
-$document = "[{$line}|".PHP_EOL."]";
+$document = "[{$line}|" . PHP_EOL . ']';
 
 // Now we make the syntax object
-$documentSyntax = S::syntax()->parse($document);
+$documentSyntax = S\syntax()->parse($document);
 
 // Then we can use the defined syntax to parse the document:
 $developers = $documentSyntax->parse(trim(file_get_contents(__DIR__ . '/files/devs.txt')));
@@ -143,9 +140,9 @@ The class `Tarsana\Syntax\Factory` provides useful static methods to create synt
 
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$string = S::string(); // instance of Tarsana\Syntax\StringSyntax
+$string = S\string(); // instance of Tarsana\Syntax\StringSyntax
 
 $string->parse('Lorem ipsum dolor sit amet');
 //=> 'Lorem ipsum dolor sit amet'
@@ -163,9 +160,9 @@ $string->dump('');
 
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$number = S::number(); // instance of Tarsana\Syntax\NumberSyntax
+$number = S\number(); // instance of Tarsana\Syntax\NumberSyntax
 
 $number->parse('58.9'); //=> 58.9
 
@@ -174,11 +171,12 @@ $number->parse('Lorem12');
 ```
 
 ## Parsing and Dumping Booleans
+
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$boolean = S::boolean(); // instance of Tarsana\Syntax\BooleanSyntax
+$boolean = S\boolean(); // instance of Tarsana\Syntax\BooleanSyntax
 
 $boolean->parse('true'); //=> true
 $boolean->parse('yes'); //=> true
@@ -208,29 +206,30 @@ $boolean->dump('Lorem');
 
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$strings = S::array();
+$strings = S\arr();
 
 $strings->parse('aa:bb,cc,"ss,089",true');
 //=> ['aa:bb','cc','ss,089','true']
 // Note that we can use "..." to escape the separator
 
-$strings->dump(['aa','bb,cc','76']);
+$strings->dump(['aa', 'bb,cc', '76']);
 //=> 'aa,"bb,cc",76'
 // Yeah, it's smart enough to auto-escape items containing the separator
 
-$vector = S::array(S::number());
+$vector = S\arr(S\number());
 
 $vector->parse('1,2,3,4,5');
 //=> [1, 2, 3, 4, 5]
 
-$matrix = S::array($vector, PHP_EOL);
+$matrix = S\arr($vector, PHP_EOL);
 
 $matrix->parse(
-'1,2,3
+  '1,2,3
 4,5,6,7
-8,9,100');
+8,9,100'
+);
 //=> [ [1, 2, 3], [4, 5, 6, 7], [8, 9, 100] ]
 ```
 
@@ -240,9 +239,9 @@ $matrix->parse(
 
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$optionalNumber = S::optional(S::number(), 10);
+$optionalNumber = S\optional(S\number(), 10);
 
 $optionalNumber->parse(15); //=> 15
 $optionalNumber->success(); //=> true
@@ -257,13 +256,13 @@ $optionalNumber->success(); //=> false
 
 ```php
 <?php
-use Tarsana\Syntax\Factory as S;
+use Tarsana\Syntax as S;
 
-$repository = S::object([
-    'name' => S::string(),
-    'is_private' => S::optional(S::boolean(), false),
-    'forks' => S::optional(S::number(), 0),
-    'stars' => S::optional(S::number(), 0)
+$repository = S\object([
+  'name' => S\string(),
+  'is_private' => S\optional(S\boolean(), false),
+  'forks' => S\optional(S\number(), 0),
+  'stars' => S\optional(S\number(), 0),
 ]);
 
 $repository->parse('tarsana/syntax');
@@ -292,20 +291,23 @@ $repository->parse('tarsana/syntax:yes:7');
 // }
 
 $data = (object) [
-    'name' => 'foo/bar',
-    'is_private' => false,
-    'forks' => 9,
-    'stars' => 3
+  'name' => 'foo/bar',
+  'is_private' => false,
+  'forks' => 9,
+  'stars' => 3,
 ];
 
 $repository->dump($data);
 // 'foo/bar:false:9:3'
 
-$developer = S::object([
-    'name' => S::string(),
-    'followers' => S::optional(S::number(), 0),
-    'repositories' => S::optional(S::array($repository), [])
-], ' ');
+$developer = S\object(
+  [
+    'name' => S\string(),
+    'followers' => S\optional(S\number(), 0),
+    'repositories' => S\optional(S\arr($repository), []),
+  ],
+  ' '
+);
 
 $developer->parse('Amine');
 // {
@@ -332,65 +334,70 @@ Now you know how to parse and dump basic types : `string`, `boolean`, `number`, 
 So instead of writing this:
 
 ```php
-$personSyntax = S::object([
-  'name' => S::string(),
-   'age' => S::number(),
-   'vip' => S::boolean(),
-  'friends' => S::array()
+$personSyntax = S\object([
+  'name' => S\string(),
+  'age' => S\number(),
+  'vip' => S\boolean(),
+  'friends' => S\arr(),
 ]);
 ```
 
 You simply write this
 
 ```php
-$personSyntax = S::syntax()->parse('{name, age:number, vip:boolean, friends:[]}');
+$personSyntax = S\syntax()->parse('{name, age:number, vip:boolean, friends:[]}');
 ```
 
 ### Rules
 
-- `S::string()` is `string`.
-- `S::number()` is `number`.
-- `S::boolean()` is `boolean`.
-- `S::syntax()` is `syntax`.
-- `S::optional($type, $default)` is `(type:default)` where `type` is the string corresponding to `$type` and `default` is `json_encode($default)`.
-- `S::array($type, $separator)` is `[type|separator]` where`type` is the string corresponding to `$type` and `separator` is the same as `$separator`. If the separator is omitted (ie. `[type]`); the default value is `,`.
-t)`.
-- `S::object(['name1' => $type1, 'name2' => $type2], $separator)` is `{name1:type1, name2:type2 |separator]` . If the separator is missing the default value is `:`.
+- `S\string()` is `string`.
+- `S\number()` is `number`.
+- `S\boolean()` is `boolean`.
+- `S\syntax()` is `syntax`.
+- `S\optional($type, $default)` is `(type:default)` where `type` is the string corresponding to `$type` and `default` is `json_encode($default)`.
+- `S\arr($type, $separator)` is `[type|separator]` where`type` is the string corresponding to `$type` and `separator` is the same as `$separator`. If the separator is omitted (ie. `[type]`); the default value is `,`.
+- `S\object(['name1' => $type1, 'name2' => $type2], $separator)` is `{name1:type1, name2:type2 |separator}` . If the separator is missing the default value is `:`.
 
 ### Examples
 
 ```php
 // '{name: string, age: number}'
-S::object([
-  'name' => S::string(),
-   'age' => S::number()
+S\object([
+  'name' => S\string(),
+   'age' => S\number()
 ])
 
 // '{position: {x: number, y: number |"|"}, width:number, height:number}'
-S::obejct([
-  'position' => S::object([
-    'x' => S::number(),
-    'y' => S::number()
+S\obejct([
+  'position' => S\object([
+    'x' => S\number(),
+    'y' => S\number()
   ], '|'),
-   'width' => S::number(),
-  'height' => S::number()
+   'width' => S\number(),
+  'height' => S\number()
 ])
 
 // '{name, stars:number, contributers: [{name, email|-}]}'
-S::object([
-  'name'  => S::string(),
-  'stars' => S::number(),
-  'contributers' => S::array(S::object([
-    'name'  => S::string(),
-    'email' => S::string()
+S\object([
+  'name'  => S\string(),
+  'stars' => S\number(),
+  'contributers' => S\arr(S\object([
+    'name'  => S\string(),
+    'email' => S\string()
   ], '-'))
 ])
 ```
 
-# Development Notes & Next Steps
+# Development Notes
+
+- **version 3.0.0**
+
+  - Upgraded the code to PHP 8.
+  - Replaced `Factory` static methods by namespaced functions.
 
 - **version 2.1.0**
-  - `syntax` added to the string representation of a syntax and corresponds to the `S::syntax()` instance.
+
+  - `syntax` added to the string representation of a syntax and corresponds to the `S\syntax()` instance.
 
 - **version 2.0.0**
 
@@ -428,7 +435,3 @@ S::object([
   - Some small bugs of `ArraySyntax` and `ObjectSyntax` fixed.
 
 - **version 1.0.0**: String, Number, Boolean, Array and Object syntaxes.
-
-# Contributing
-
-Please take a look at the code and see how other syntax classes are done and tested before fixing or creating a syntax. All feedbacks and pull requests are welcome :D
