@@ -4,3 +4,4 @@ composer.phar
 *.sublime-*
 /about
 build
+/.*

@@ -1,4 +1,6 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\DumpException;
 use Tarsana\Syntax\Exceptions\ParseException;
@@ -6,8 +8,8 @@ use Tarsana\Syntax\Exceptions\ParseException;
 /**
  * Represents a string.
  */
-class NumberSyntax extends Syntax {
-
+class NumberSyntax extends Syntax
+{
     const ERROR = 'Not a numeric value';
 
     protected static $instance = null;
@@ -17,14 +19,17 @@ class NumberSyntax extends Syntax {
      *
      * @return Tarsana\Syntax\NumberSyntax
      */
-    public static function instance() : NumberSyntax
+    public static function instance(): NumberSyntax
     {
-        if (self::$instance === null)
-            self::$instance = new NumberSyntax;
+        if (self::$instance === null) {
+            self::$instance = new NumberSyntax();
+        }
         return self::$instance;
     }
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * Parses the `$text` and returns the
@@ -37,8 +42,9 @@ class NumberSyntax extends Syntax {
      */
     public function parse(string $text)
     {
-        if (! is_numeric($text))
+        if (! is_numeric($text)) {
             throw new ParseException($this, $text, 0, self::ERROR);
+        }
         return $text + 0;
     }
 
@@ -51,12 +57,13 @@ class NumberSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($value) : string
+    public function dump($value): string
     {
-        if (! is_numeric($value))
+        if (! is_numeric($value)) {
             throw new DumpException($this, $value, self::ERROR);
+        }
 
-        return ''. $value;
+        return '' . $value;
     }
 
     /**
@@ -64,7 +71,7 @@ class NumberSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'Number';
     }

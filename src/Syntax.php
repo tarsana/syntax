@@ -1,12 +1,12 @@
-<?php namespace Tarsana\Syntax;
+<?php
 
-use Tarsana\Syntax\Result\Result;
+namespace Tarsana\Syntax;
 
 /**
  * All syntaxes should inherit from this class.
  */
-abstract class Syntax {
-
+abstract class Syntax implements \Stringable
+{
     /**
      * Parses the `$text` and returns the
      * result or throws a `ParseException`.
@@ -27,12 +27,12 @@ abstract class Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    abstract public function dump($value) : string;
+    abstract public function dump($value): string;
 
     /**
      * Returns the string representation of the syntax.
      *
      * @return string
      */
-    abstract public function __toString() : string;
+    abstract public function __toString(): string;
 }

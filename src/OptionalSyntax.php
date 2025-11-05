@@ -1,4 +1,6 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\ParseException;
 use Tarsana\Syntax\Syntax;
@@ -6,21 +8,14 @@ use Tarsana\Syntax\Syntax;
 /**
  * Represents a syntax with a default value.
  */
-class OptionalSyntax extends Syntax {
-
+class OptionalSyntax extends Syntax
+{
     /**
      * The syntax.
      *
      * @var Tarsana\Syntax\Syntax
      */
     protected $syntax;
-
-    /**
-     * The default value.
-     *
-     * @var mixed
-     */
-    protected $default;
 
     /**
      * Tells if the last parse operation
@@ -36,10 +31,13 @@ class OptionalSyntax extends Syntax {
      * @param Tarsana\Syntax\Syntax $syntax
      * @param mixed $default
      */
-    public function __construct(Syntax $syntax, $default)
-    {
+    public function __construct(
+        Syntax $syntax, /**
+         * The default value.
+         */
+        protected $default
+    ) {
         $this->syntax  = $syntax;
-        $this->default = $default;
     }
 
     /**
@@ -48,7 +46,7 @@ class OptionalSyntax extends Syntax {
      * @param  Tarsana\Syntax\Syntax $value
      * @return Tarsana\Syntax\Syntax
      */
-    public function syntax(Syntax $value = null) : Syntax
+    public function syntax(Syntax $value = null): Syntax
     {
         if (null === $value) {
             return $this->syntax;
@@ -85,7 +83,8 @@ class OptionalSyntax extends Syntax {
      *
      * @return  bool
      */
-    public function success() {
+    public function success()
+    {
         return $this->success;
     }
 
@@ -94,7 +93,7 @@ class OptionalSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return "Optional {$this->syntax}";
     }
@@ -112,7 +111,7 @@ class OptionalSyntax extends Syntax {
         try {
             $result = $this->syntax->parse($text);
             $this->success = true;
-        } catch (ParseException $e) {
+        } catch (ParseException) {
             $result = $this->default;
             $this->success = false;
         }
@@ -128,9 +127,8 @@ class OptionalSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($value) : string
+    public function dump($value): string
     {
         return $this->syntax->dump($value);
     }
-
 }

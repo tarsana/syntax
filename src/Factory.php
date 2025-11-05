@@ -1,40 +1,41 @@
-<?php namespace Tarsana\Syntax;
+<?php
 
-class Factory {
+namespace Tarsana\Syntax;
 
-    public static function string() : StringSyntax
+class Factory
+{
+    public static function string(): StringSyntax
     {
         return StringSyntax::instance();
     }
 
-    public static function boolean() : BooleanSyntax
+    public static function boolean(): BooleanSyntax
     {
         return BooleanSyntax::instance();
     }
 
-    public static function number() : NumberSyntax
+    public static function number(): NumberSyntax
     {
         return NumberSyntax::instance();
     }
 
-    public static function array(Syntax $syntax = null, string $separator = null) : ArraySyntax
+    public static function array(Syntax $syntax = null, string $separator = null): ArraySyntax
     {
         return new ArraySyntax($syntax, $separator);
     }
 
-    public static function object(array $fields, string $separator = null) : ObjectSyntax
+    public static function object(array $fields, string $separator = null): ObjectSyntax
     {
         return new ObjectSyntax($fields, $separator);
     }
 
-    public static function optional(Syntax $syntax, $default) : OptionalSyntax
+    public static function optional(Syntax $syntax, $default): OptionalSyntax
     {
         return new OptionalSyntax($syntax, $default);
     }
 
-    public static function syntax() : SyntaxSyntax
+    public static function syntax(): SyntaxSyntax
     {
         return SyntaxSyntax::instance();
     }
-
 }

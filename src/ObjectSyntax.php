@@ -1,7 +1,8 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\DumpException;
-use Tarsana\Syntax\Exceptions\Exception;
 use Tarsana\Syntax\Exceptions\ParseException;
 use Tarsana\Syntax\OptionalSyntax;
 use Tarsana\Syntax\Syntax;
@@ -9,8 +10,8 @@ use Tarsana\Syntax\Syntax;
 /**
  * Represents an couple of values with different syntaxes.
  */
-class ObjectSyntax extends Syntax {
-
+class ObjectSyntax extends Syntax
+{
     const DEFAULT_SEPARATOR = ':';
     const MISSING_FIELD     = 'missing-field';
     const INVALID_FIELD     = 'invalid-field';
@@ -42,15 +43,17 @@ class ObjectSyntax extends Syntax {
     /**
      * Creates a new instance of ObjectSyntax.
      *
-     * @param array $fields Associative array specifying the fields of the object.
+     * @param array  $fields    Associative array specifying the fields of the object.
      * @param string $separator The string that separates items of the array.
      */
     public function __construct(array $fields, string $separator = null)
     {
-        if (empty($fields))
+        if (empty($fields)) {
             throw new \InvalidArgumentException('ObjectSyntax should have at least one field');
-        if ($separator === null ||  $separator == '')
+        }
+        if ($separator === null ||  $separator == '') {
             $separator = self::DEFAULT_SEPARATOR;
+        }
 
         $this->fields = $fields;
         $this->separator = $separator;
@@ -90,7 +93,7 @@ class ObjectSyntax extends Syntax {
     /**
      * Setter and getter of a specific field.
      *
-     * @param  string $name
+     * @param  string                     $name
      * @param  Tarsana\Syntax\Syntax|null $value
      * @return Tarsana\Syntax\Syntax|self
      *
@@ -123,7 +126,7 @@ class ObjectSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         $fields = [];
         foreach ($this->fields as $name => $syntax) {
@@ -169,7 +172,7 @@ class ObjectSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    public function parse(string $text) : \stdClass
+    public function parse(string $text): \stdClass
     {
         $items = Text::split($text, $this->separator);
         $itemsCount = count($items);
@@ -186,22 +189,23 @@ class ObjectSyntax extends Syntax {
                 $syntax = $this->fields[$names[$nameIndex]];
                 $this->values[$names[$nameIndex]]->value = $syntax->parse($items[$itemIndex]);
                 $this->values[$names[$nameIndex]]->error = null;
-                $index += strlen($items[$itemIndex]) + $separatorLength;
-                $nameIndex ++;
-                $itemIndex ++;
+                $index += strlen((string) $items[$itemIndex]) + $separatorLength;
+                $nameIndex++;
+                $itemIndex++;
                 if ($syntax instanceof OptionalSyntax && !$syntax->success()) {
-                    $itemIndex --;
+                    $itemIndex--;
                 }
             }
             // if items are left
-            if ($itemIndex < $itemsCount)
+            if ($itemIndex < $itemsCount) {
                 $itemsLeft = true;
+            }
             // if fields are left
             while ($nameIndex < $namesCount) {
                 $syntax = $this->fields[$names[$nameIndex]];
                 $this->values[$names[$nameIndex]]->value = $syntax->parse('');
                 $this->values[$names[$nameIndex]]->error = null;
-                $nameIndex ++;
+                $nameIndex++;
             }
         } catch (ParseException $e) {
             if ($itemIndex < $itemsCount) {
@@ -229,13 +233,16 @@ class ObjectSyntax extends Syntax {
                 'type'  => 'additional-items',
                 'items' => array_slice($items, $itemIndex)
             ];
-            throw new ParseException($this, $text, $index - $separatorLength,
-                "Additional items with no corresponding fields", $extra);
+            throw new ParseException(
+                $this,
+                $text,
+                $index - $separatorLength,
+                "Additional items with no corresponding fields",
+                $extra
+            );
         }
 
-        return (object) array_map(function(\stdClass $field) {
-            return $field->value;
-        }, $this->values);
+        return (object) array_map(fn(\stdClass $field) => $field->value, $this->values);
     }
 
     /**
@@ -247,7 +254,7 @@ class ObjectSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($value) : string
+    public function dump($value): string
     {
         $value = (array) $value;
         $result = [];
@@ -266,10 +273,10 @@ class ObjectSyntax extends Syntax {
             throw new DumpException($this, $value, "Unable to dump the field '{$current}'", [], $e);
         }
 
-        if ($missingField)
+        if ($missingField) {
             throw new DumpException($this, $value, "Missing field '{$name}'");
+        }
 
         return Text::join($result, $this->separator);
     }
-
 }

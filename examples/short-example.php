@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__ . '/../vendor/autoload.php';
 
 use Tarsana\Syntax\Factory as S;
@@ -8,7 +9,7 @@ $repo = "{name: string, stars:number}";
 // a line consists of a first and last names, optional number of followers, and repos, separated by space. The repos are separated by ","
 $line = "{first_name, last_name, followers: (number: 0), repos: ([{$repo}]:[]) | }";
 // a document is a list of lines separated by PHP_EOL
-$document = "[{$line}|".PHP_EOL."]";
+$document = "[{$line}|" . PHP_EOL . "]";
 
 // Now we make the syntax object
 $documentSyntax = S::syntax()->parse($document);

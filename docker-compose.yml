@@ -1,0 +1,9 @@
+services:
+  php83:
+    container_name: tarsana-syntax-dev
+    build: ./docker
+    working_dir: /app
+    volumes:
+      - ./:/app
+    # Run a script or just show the PHP version
+    command: bash -c "composer install"

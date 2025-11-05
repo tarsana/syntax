@@ -1,8 +1,10 @@
-<?php namespace Tarsana\Syntax;
+<?php
 
-class Text {
+namespace Tarsana\Syntax;
 
-    public static function split(string $text, string $separator, string $surrounders = '""[](){}', string $wrappers = '""') : array
+class Text
+{
+    public static function split(string $text, string $separator, string $surrounders = '""[](){}', string $wrappers = '""'): array
     {
         // Let's assume some values to understand how this function works
         // surrounders = '""{}()'
@@ -19,11 +21,13 @@ class Text {
             'total'    => 0   // the total number of needed closings
         ];
         foreach (str_split($surrounders) as $key => $char) {
-            $counters['values'][$key / 2] = 0;
-            if ($key % 2 == 0)
-                $counters['openings'][$char] = $key / 2;
-            else
-                $counters['closings'][$char] = $key / 2;
+            $index = intdiv($key, 2);
+            $counters['values'][$index] = 0;
+            if ($key % 2 == 0) {
+                $counters['openings'][$char] = $index;
+            } else {
+                $counters['closings'][$char] = $index;
+            }
         }
         // $counters = [
         //   'values'   => [0, 0, 0],
@@ -50,27 +54,28 @@ class Text {
                     $value = $counters['values'][$counters['openings'][$c]];
                     if ($value == 0) {
                         $counters['values'][$counters['openings'][$c]] = 1;
-                        $counters['total'] ++;
+                        $counters['total']++;
                     } else {
                         $counters['values'][$counters['openings'][$c]] = 0;
-                        $counters['total'] --;
+                        $counters['total']--;
                     }
                 } else {
                     if ($isOpening) {
-                        $counters['values'][$counters['openings'][$c]] ++;
-                        $counters['total'] ++;
+                        $counters['values'][$counters['openings'][$c]]++;
+                        $counters['total']++;
                     }
                     if ($isClosing) {
-                        $counters['values'][$counters['closings'][$c]] --;
-                        $counters['total'] --;
+                        $counters['values'][$counters['closings'][$c]]--;
+                        $counters['total']--;
                     }
                 }
                 $buffer .= $c;
-                $index ++;
+                $index++;
             }
         }
-        if ($buffer != '')
+        if ($buffer != '') {
             $result[] = self::unwrap($buffer, $wrappers);
+        }
 
         return $result;
     }
@@ -80,21 +85,22 @@ class Text {
      * ('(Hey)', '()') => 'Hey'
      * ('(Hey)', '""()') => 'Hey'
      */
-    public static function unwrap(string $text, string $wrappers) : string
+    public static function unwrap(string $text, string $wrappers): string
     {
         $size = strlen($wrappers);
         for ($i = 0; $i < $size; $i += 2) {
-            if (substr($text, 0, 1) == substr($wrappers, $i, 1)
-               && substr($text, -1) == substr($wrappers, $i + 1, 1))
+            if (
+                substr($text, 0, 1) == substr($wrappers, $i, 1)
+                && substr($text, -1) == substr($wrappers, $i + 1, 1)
+            ) {
                 return substr($text, 1, strlen($text) - 2);
+            }
         }
         return $text;
     }
 
-    public static function join(array $items, string $separator) : string
+    public static function join(array $items, string $separator): string
     {
-        return implode($separator, array_map(function(string $item) use($separator) {
-            return (strpos($item, $separator) !== false) ? "\"{$item}\"" : $item;
-        }, $items));
+        return implode($separator, array_map(fn(string $item) => (str_contains($item, $separator)) ? "\"{$item}\"" : $item, $items));
     }
 }
