@@ -10,11 +10,11 @@ use Tarsana\Syntax\Exceptions\DumpException;
  */
 class BooleanSyntax extends Syntax
 {
-    const TRUE_VALUES  = ['true', 'yes', 'y'];
-    const FALSE_VALUES = ['false', 'no', 'n'];
+    public const TRUE_VALUES  = ['true', 'yes', 'y'];
+    public const FALSE_VALUES = ['false', 'no', 'n'];
 
-    const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
-    const DUMP_ERROR  = 'Not a boolean';
+    public const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
+    public const DUMP_ERROR  = 'Not a boolean';
 
     protected static $instance = null;
 

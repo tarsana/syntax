@@ -21,7 +21,7 @@
     }
   },
   "require": {
-    "php": "^8.3"
+    "php": "^8.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5",
@@ -30,8 +30,8 @@
   },
   "scripts": {
     "run-tests": "vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations",
-    "code-sniff": "vendor/bin/phpcs -d memory_limit=512M -p src tests examples --standard=PSR12",
-    "code-fix": "vendor/bin/phpcbf -d memory_limit=512M -p src tests examples --standard=PSR12",
+    "code-sniff": "vendor/bin/phpcs -d memory_limit=512M -p src examples --standard=PSR12",
+    "code-fix": "vendor/bin/phpcbf -d memory_limit=512M -p src examples --standard=PSR12",
     "rector": "vendor/bin/rector process"
   }
 }

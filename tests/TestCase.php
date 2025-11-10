@@ -45,7 +45,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         return parent::assertEquals($expected, $actual);
     }
 
-    protected function assertParse(Syntax $syntax, array $tests, callable $equals = null)
+    protected function assertParse(Syntax $syntax, array $tests, ?callable $equals = null)
     {
         if ($equals === null) {
             $equals = $this->assertEqualsCompat(...);

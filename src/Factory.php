@@ -19,12 +19,12 @@ class Factory
         return NumberSyntax::instance();
     }
 
-    public static function array(Syntax $syntax = null, string $separator = null): ArraySyntax
+    public static function array(?Syntax $syntax = null, ?string $separator = null): ArraySyntax
     {
         return new ArraySyntax($syntax, $separator);
     }
 
-    public static function object(array $fields, string $separator = null): ObjectSyntax
+    public static function object(array $fields, ?string $separator = null): ObjectSyntax
     {
         return new ObjectSyntax($fields, $separator);
     }

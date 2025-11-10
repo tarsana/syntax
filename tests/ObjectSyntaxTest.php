@@ -13,7 +13,7 @@ class ObjectSyntaxTest extends TestCase
 {
     public function test_getters_and_setters()
     {
-        $syntax = (new ObjectSyntax(['name' => S::array()], '|'))
+        $syntax = new ObjectSyntax(['name' => S::array()], '|')
             ->fields(['name' => S::string()])
             ->field('age', S::number());
 

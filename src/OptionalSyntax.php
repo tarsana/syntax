@@ -46,7 +46,7 @@ class OptionalSyntax extends Syntax
      * @param  Tarsana\Syntax\Syntax $value
      * @return Tarsana\Syntax\Syntax
      */
-    public function syntax(Syntax $value = null): Syntax
+    public function syntax(?Syntax $value = null): Syntax
     {
         if (null === $value) {
             return $this->syntax;

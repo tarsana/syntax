@@ -10,7 +10,7 @@ use Tarsana\Syntax\Exceptions\ParseException;
  */
 class NumberSyntax extends Syntax
 {
-    const ERROR = 'Not a numeric value';
+    public const ERROR = 'Not a numeric value';
 
     protected static $instance = null;
 

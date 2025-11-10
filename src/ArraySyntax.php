@@ -11,8 +11,8 @@ use Tarsana\Syntax\Syntax;
  */
 class ArraySyntax extends Syntax
 {
-    const DEFAULT_SEPARATOR = ',';
-    const ERROR = 'Not an array';
+    public const DEFAULT_SEPARATOR = ',';
+    public const ERROR = 'Not an array';
 
     /**
      * The string that separates items of the array.
@@ -31,7 +31,7 @@ class ArraySyntax extends Syntax
     /**
      * Creates a new instance of ArraySyntax.
      */
-    public function __construct(Syntax $syntax = null, string $separator = null)
+    public function __construct(?Syntax $syntax = null, ?string $separator = null)
     {
         if ($syntax === null) {
             $syntax = Factory::string();
@@ -50,7 +50,7 @@ class ArraySyntax extends Syntax
      * @param  Tarsana\Syntax\Syntax $value
      * @return Tarsana\Syntax\Syntax
      */
-    public function syntax(Syntax $value = null): Syntax
+    public function syntax(?Syntax $value = null): Syntax
     {
         if (null === $value) {
             return $this->syntax;
@@ -65,7 +65,7 @@ class ArraySyntax extends Syntax
      * @param  string $value
      * @return self|string
      */
-    public function separator(string $value = null)
+    public function separator(?string $value = null)
     {
         if (null === $value) {
             return $this->separator;

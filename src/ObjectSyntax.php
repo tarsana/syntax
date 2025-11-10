@@ -12,10 +12,10 @@ use Tarsana\Syntax\Syntax;
  */
 class ObjectSyntax extends Syntax
 {
-    const DEFAULT_SEPARATOR = ':';
-    const MISSING_FIELD     = 'missing-field';
-    const INVALID_FIELD     = 'invalid-field';
-    const ADDITIONAL_ITEMS  = 'additional-items';
+    public const DEFAULT_SEPARATOR = ':';
+    public const MISSING_FIELD     = 'missing-field';
+    public const INVALID_FIELD     = 'invalid-field';
+    public const ADDITIONAL_ITEMS  = 'additional-items';
 
     /**
      * The string that separates items of the object.
@@ -46,7 +46,7 @@ class ObjectSyntax extends Syntax
      * @param array  $fields    Associative array specifying the fields of the object.
      * @param string $separator The string that separates items of the array.
      */
-    public function __construct(array $fields, string $separator = null)
+    public function __construct(array $fields, ?string $separator = null)
     {
         if (empty($fields)) {
             throw new \InvalidArgumentException('ObjectSyntax should have at least one field');
@@ -99,7 +99,7 @@ class ObjectSyntax extends Syntax
      *
      * @throws InvalidArgumentException
      */
-    public function field(string $name, Syntax $value = null)
+    public function field(string $name, ?Syntax $value = null)
     {
         if ($value === null) {
             $names = explode('.', $name);

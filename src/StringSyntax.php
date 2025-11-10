@@ -10,8 +10,8 @@ use Tarsana\Syntax\Exceptions\ParseException;
  */
 class StringSyntax extends Syntax
 {
-    const ERROR = 'Not a string value';
-    const NO_EMPTY = 'String should not be empty';
+    public const ERROR = 'Not a string value';
+    public const NO_EMPTY = 'String should not be empty';
 
     protected static $instance = null;
 

@@ -1,5 +1,5 @@
 services:
-  php83:
+  php84:
     container_name: tarsana-syntax-dev
     build: ./docker
     working_dir: /app
