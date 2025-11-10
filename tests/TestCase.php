@@ -11,6 +11,7 @@ use Tarsana\Syntax\ObjectSyntax;
 use Tarsana\Syntax\OptionalSyntax;
 use Tarsana\Syntax\StringSyntax;
 use Tarsana\Syntax\Syntax;
+use Tarsana\Syntax\SyntaxSyntax;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
