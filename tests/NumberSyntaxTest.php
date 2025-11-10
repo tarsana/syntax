@@ -7,7 +7,7 @@ use Tarsana\Syntax\NumberSyntax;
 
 class NumberSyntaxTest extends TestCase
 {
-    public function test_parse()
+    public function test_parse(): void
     {
         $this->assertParse(
             S::number(),
@@ -22,7 +22,7 @@ class NumberSyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $this->assertDump(
             S::number(),

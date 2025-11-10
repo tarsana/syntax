@@ -7,7 +7,7 @@ use Tarsana\Syntax\NumberSyntax;
 
 class OptionalSyntaxTest extends TestCase
 {
-    public function test_getters_and_setters()
+    public function test_getters_and_setters(): void
     {
         $syntax = S::optional(S::string(), 'None')
             ->setDefault('...')
@@ -17,7 +17,7 @@ class OptionalSyntaxTest extends TestCase
         $this->assertTrue($syntax->syntax() instanceof NumberSyntax);
     }
 
-    public function test_parse()
+    public function test_parse(): void
     {
         $this->assertParse(
             S::optional(S::number(), 15),
@@ -28,7 +28,7 @@ class OptionalSyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $this->assertDump(
             S::optional(S::number(), 15),

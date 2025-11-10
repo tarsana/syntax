@@ -13,7 +13,7 @@ class StringSyntax extends Syntax
     public const ERROR = 'Not a string value';
     public const NO_EMPTY = 'String should not be empty';
 
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * Returns the StringSyntax instance.

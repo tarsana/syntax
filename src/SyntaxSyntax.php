@@ -15,7 +15,7 @@ use Tarsana\Syntax\StringSyntax;
  */
 class SyntaxSyntax extends Syntax
 {
-    protected static $instance = null;
+    protected static $instance;
 
     protected $objectSyntax;
     protected $optionalSyntax;

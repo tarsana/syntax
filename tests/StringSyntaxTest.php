@@ -7,7 +7,7 @@ use Tarsana\Syntax\StringSyntax;
 
 class StringSyntaxTest extends TestCase
 {
-    public function test_parse()
+    public function test_parse(): void
     {
         $this->assertParse(
             S::string(),
@@ -20,7 +20,7 @@ class StringSyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $this->assertDump(
             S::string(),

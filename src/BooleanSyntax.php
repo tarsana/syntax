@@ -16,7 +16,7 @@ class BooleanSyntax extends Syntax
     public const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
     public const DUMP_ERROR  = 'Not a boolean';
 
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * Returns the BooleanSyntax instance.

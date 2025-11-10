@@ -11,7 +11,7 @@ use Tarsana\Syntax\StringSyntax;
 
 class ObjectSyntaxTest extends TestCase
 {
-    public function test_getters_and_setters()
+    public function test_getters_and_setters(): void
     {
         $syntax = new ObjectSyntax(['name' => S::array()], '|')
             ->fields(['name' => S::string()])
@@ -24,7 +24,7 @@ class ObjectSyntaxTest extends TestCase
         $this->assertTrue($syntax->field('age') instanceof NumberSyntax);
     }
 
-    public function test_get_nested_fields()
+    public function test_get_nested_fields(): void
     {
         $syntax = S::object(
             [
@@ -57,7 +57,7 @@ class ObjectSyntaxTest extends TestCase
         new ObjectSyntax([]);
     }
 
-    public function test_get_unknown_field()
+    public function test_get_unknown_field(): void
     {
         $this->expectException(\InvalidArgumentException::class);
 
@@ -68,7 +68,7 @@ class ObjectSyntaxTest extends TestCase
         $syntax->field('account');
     }
 
-    public function test_to_string()
+    public function test_to_string(): void
     {
         $syntax = S::object(
             [
@@ -81,7 +81,7 @@ class ObjectSyntaxTest extends TestCase
         $this->assertEqualsCompat("Object {name: String, age: Number, is_programmer: Boolean, friends: Array of (String) separated by ','} separated by ':'", "{$syntax}");
     }
 
-    public function test_parse_all_fields_are_required()
+    public function test_parse_all_fields_are_required(): void
     {
         // Parsing all required fields
         $syntax = S::object(
@@ -147,7 +147,7 @@ class ObjectSyntaxTest extends TestCase
         );
     }
 
-    public function test_parse_all_fields_are_optional()
+    public function test_parse_all_fields_are_optional(): void
     {
         // Optional Fields
         $syntax = S::object(
@@ -205,7 +205,7 @@ class ObjectSyntaxTest extends TestCase
         );
     }
 
-    public function test_parse_with_optional_fields()
+    public function test_parse_with_optional_fields(): void
     {
         $syntax = S::object(
             [
@@ -249,7 +249,7 @@ class ObjectSyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $syntax = S::object(
             [

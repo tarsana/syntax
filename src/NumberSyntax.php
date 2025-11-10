@@ -12,7 +12,7 @@ class NumberSyntax extends Syntax
 {
     public const ERROR = 'Not a numeric value';
 
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * Returns the NumberSyntax instance.

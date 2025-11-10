@@ -9,7 +9,7 @@ use Tarsana\Syntax\StringSyntax;
 
 class ArraySyntaxTest extends TestCase
 {
-    public function test_getters_and_setters()
+    public function test_getters_and_setters(): void
     {
         $syntax = S::array()
             ->separator('/')
@@ -19,7 +19,7 @@ class ArraySyntaxTest extends TestCase
         $this->assertTrue($syntax->syntax() instanceof NumberSyntax);
     }
 
-    public function test_parse()
+    public function test_parse(): void
     {
         $syntax = new ArraySyntax();
         $this->assertParse(
@@ -61,7 +61,7 @@ class ArraySyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $syntax = new ArraySyntax();
         $this->assertDump(

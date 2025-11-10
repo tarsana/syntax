@@ -29,7 +29,7 @@ class Debugger extends Syntax
             $syntax->syntax(new Debugger($syntax->syntax()));
         }
         if ($syntax instanceof ObjectSyntax) {
-            $syntax->fields(array_map(fn($s) => new Debugger($s), $syntax->fields()));
+            $syntax->fields(array_map(fn($s): \Debugger => new Debugger($s), $syntax->fields()));
         }
         $this->syntax = $syntax;
     }

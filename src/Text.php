@@ -101,6 +101,6 @@ class Text
 
     public static function join(array $items, string $separator): string
     {
-        return implode($separator, array_map(fn(string $item) => (str_contains($item, $separator)) ? "\"{$item}\"" : $item, $items));
+        return implode($separator, array_map(fn(string $item): string => (str_contains($item, $separator)) ? "\"{$item}\"" : $item, $items));
     }
 }

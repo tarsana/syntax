@@ -8,7 +8,7 @@ use Tarsana\Syntax\UnitTests\TestCase;
 
 class BooleanSyntaxTest extends TestCase
 {
-    public function test_parse()
+    public function test_parse(): void
     {
         $this->assertParse(
             S::boolean(),
@@ -22,7 +22,7 @@ class BooleanSyntaxTest extends TestCase
         );
     }
 
-    public function test_dump()
+    public function test_dump(): void
     {
         $this->assertDump(
             S::boolean(),
