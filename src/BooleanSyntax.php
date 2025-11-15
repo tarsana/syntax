@@ -1,4 +1,6 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\ParseException;
 use Tarsana\Syntax\Exceptions\DumpException;
@@ -6,29 +8,32 @@ use Tarsana\Syntax\Exceptions\DumpException;
 /**
  * Represents a boolean.
  */
-class BooleanSyntax extends Syntax {
+class BooleanSyntax extends Syntax
+{
+    public const TRUE_VALUES  = ['true', 'yes', 'y'];
+    public const FALSE_VALUES = ['false', 'no', 'n'];
 
-    const TRUE_VALUES  = ['true', 'yes', 'y'];
-    const FALSE_VALUES = ['false', 'no', 'n'];
+    public const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
+    public const DUMP_ERROR  = 'Not a boolean';
 
-    const PARSE_ERROR = 'Boolean value should be one of "yes", "no", "y", "n", "true", "false"';
-    const DUMP_ERROR  = 'Not a boolean';
-
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * Returns the BooleanSyntax instance.
      *
      * @return Tarsana\Syntax\BooleanSyntax
      */
-    public static function instance() : BooleanSyntax
+    public static function instance(): BooleanSyntax
     {
-        if (self::$instance === null)
-            self::$instance = new BooleanSyntax;
+        if (self::$instance === null) {
+            self::$instance = new BooleanSyntax();
+        }
         return self::$instance;
     }
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * Parses the `$text` and returns the
@@ -39,11 +44,12 @@ class BooleanSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    public function parse(string $text) : bool
+    public function parse(string $text): bool
     {
         $lower = strtolower($text);
-        if (! in_array($lower, array_merge(self::TRUE_VALUES, self::FALSE_VALUES)))
+        if (! in_array($lower, array_merge(self::TRUE_VALUES, self::FALSE_VALUES))) {
             throw new ParseException($this, $text, 0, self::PARSE_ERROR);
+        }
         return in_array($lower, self::TRUE_VALUES);
     }
 
@@ -55,10 +61,11 @@ class BooleanSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($value) : string
+    public function dump($value): string
     {
-        if (! is_bool($value))
+        if (! is_bool($value)) {
             throw new DumpException($this, $value, self::DUMP_ERROR);
+        }
 
         return $value ? 'true' : 'false';
     }
@@ -68,9 +75,8 @@ class BooleanSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'Boolean';
     }
-
 }

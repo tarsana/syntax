@@ -1,24 +1,22 @@
-<?php namespace Tarsana\Syntax\Exceptions;
+<?php
+
+namespace Tarsana\Syntax\Exceptions;
 
 use Tarsana\Syntax\Syntax;
 
-class Exception extends \Exception {
-
+class Exception extends \Exception
+{
     protected $syntax;
-    protected $input;
     protected $extra;
-    protected $previous;
 
-    public function __construct(Syntax $syntax, $input, string $message, array $extra, $previous)
+    public function __construct(Syntax $syntax, protected $input, string $message, array $extra, protected $previous)
     {
         $this->syntax = $syntax;
-        $this->input = $input;
         $this->message = $message;
         $this->extra = $extra;
-        $this->previous = $previous;
     }
 
-    public function syntax() : Syntax
+    public function syntax(): Syntax
     {
         return $this->syntax;
     }
@@ -28,7 +26,7 @@ class Exception extends \Exception {
         return $this->input;
     }
 
-    public function message() : string
+    public function message(): string
     {
         return $this->message;
     }
@@ -42,5 +40,4 @@ class Exception extends \Exception {
     {
         return $this->extra;
     }
-
 }

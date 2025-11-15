@@ -1,4 +1,6 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\DumpException;
 use Tarsana\Syntax\Exceptions\ParseException;
@@ -6,26 +8,29 @@ use Tarsana\Syntax\Exceptions\ParseException;
 /**
  * Represents a string.
  */
-class StringSyntax extends Syntax {
+class StringSyntax extends Syntax
+{
+    public const ERROR = 'Not a string value';
+    public const NO_EMPTY = 'String should not be empty';
 
-    const ERROR = 'Not a string value';
-    const NO_EMPTY = 'String should not be empty';
-
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * Returns the StringSyntax instance.
      *
      * @return Tarsana\Syntax\StringSyntax
      */
-    public static function instance() : StringSyntax
+    public static function instance(): StringSyntax
     {
-        if (self::$instance === null)
-            self::$instance = new StringSyntax;
+        if (self::$instance === null) {
+            self::$instance = new StringSyntax();
+        }
         return self::$instance;
     }
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * Returns the given string.
@@ -33,10 +38,11 @@ class StringSyntax extends Syntax {
      * @param  string $text
      * @return string
      */
-    public function parse(string $text) : string
+    public function parse(string $text): string
     {
-        if ($text === '')
+        if ($text === '') {
             throw new ParseException($this, $text, 0, self::NO_EMPTY);
+        }
         return $text;
     }
 
@@ -48,10 +54,11 @@ class StringSyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($value) : string
+    public function dump($value): string
     {
-        if (! is_string($value))
+        if (! is_string($value)) {
             throw new DumpException($this, $value, self::ERROR);
+        }
         return $value;
     }
 
@@ -60,7 +67,7 @@ class StringSyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'String';
     }

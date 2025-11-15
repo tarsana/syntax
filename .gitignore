@@ -4,3 +4,5 @@ composer.phar
 *.sublime-*
 /about
 build
+.phpunit.cache
+.phpunit.result.cache

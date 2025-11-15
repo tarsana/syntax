@@ -7,8 +7,8 @@ use Tarsana\Syntax\ObjectSyntax;
 use Tarsana\Syntax\OptionalSyntax;
 use Tarsana\Syntax\Syntax;
 
-class Debugger extends Syntax {
-
+class Debugger extends Syntax
+{
     protected static $level = 0;
 
     protected $syntax;
@@ -29,9 +29,7 @@ class Debugger extends Syntax {
             $syntax->syntax(new Debugger($syntax->syntax()));
         }
         if ($syntax instanceof ObjectSyntax) {
-            $syntax->fields(array_map(function($s) {
-                return new Debugger($s);
-            }, $syntax->fields()));
+            $syntax->fields(array_map(fn($s): \Debugger => new Debugger($s), $syntax->fields()));
         }
         $this->syntax = $syntax;
     }
@@ -44,39 +42,39 @@ class Debugger extends Syntax {
     public function parse(string $text)
     {
         self::log("Parsing '{$text}' as {$this->syntax}\n");
-        self::$level ++;
+        self::$level++;
         try {
             $result = $this->syntax->parse($text);
-            self::$level --;
+            self::$level--;
             if ($this->syntax instanceof OptionalSyntax) {
                 self::log("Optional Success: " . $this->syntax->success());
             }
             self::log("Success: " . json_encode($result));
             return $result;
         } catch (ParseException $e) {
-            self::$level --;
+            self::$level--;
             self::log("Failure: " . $e->message());
             throw $e;
         }
     }
 
-    public function dump($value) : string
+    public function dump($value): string
     {
-        self::log("Dumping '". json_encode($value) . "' as {$this->syntax}\n");
-        self::$level ++;
+        self::log("Dumping '" . json_encode($value) . "' as {$this->syntax}\n");
+        self::$level++;
         try {
             $result = $this->syntax->dump($value);
-            self::$level --;
+            self::$level--;
             self::log("Success: " . $result);
             return $result;
         } catch (DumpException $e) {
-            self::$level --;
+            self::$level--;
             self::log("Failure: " . $e->message());
             throw $e;
         }
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return "{$this->syntax}";
     }

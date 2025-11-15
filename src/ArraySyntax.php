@@ -1,4 +1,6 @@
-<?php namespace Tarsana\Syntax;
+<?php
+
+namespace Tarsana\Syntax;
 
 use Tarsana\Syntax\Exceptions\DumpException;
 use Tarsana\Syntax\Exceptions\ParseException;
@@ -7,10 +9,10 @@ use Tarsana\Syntax\Syntax;
 /**
  * Represents an array of values with the same syntax.
  */
-class ArraySyntax extends Syntax {
-
-    const DEFAULT_SEPARATOR = ',';
-    const ERROR = 'Not an array';
+class ArraySyntax extends Syntax
+{
+    public const DEFAULT_SEPARATOR = ',';
+    public const ERROR = 'Not an array';
 
     /**
      * The string that separates items of the array.
@@ -29,12 +31,14 @@ class ArraySyntax extends Syntax {
     /**
      * Creates a new instance of ArraySyntax.
      */
-    public function __construct(Syntax $syntax = null, string $separator = null)
+    public function __construct(?Syntax $syntax = null, ?string $separator = null)
     {
-        if($syntax === null)
+        if ($syntax === null) {
             $syntax = Factory::string();
-        if ($separator === null || $separator == '')
+        }
+        if ($separator === null || $separator == '') {
             $separator = self::DEFAULT_SEPARATOR;
+        }
 
         $this->syntax = $syntax;
         $this->separator = $separator;
@@ -46,7 +50,7 @@ class ArraySyntax extends Syntax {
      * @param  Tarsana\Syntax\Syntax $value
      * @return Tarsana\Syntax\Syntax
      */
-    public function syntax(Syntax $value = null) : Syntax
+    public function syntax(?Syntax $value = null): Syntax
     {
         if (null === $value) {
             return $this->syntax;
@@ -61,7 +65,7 @@ class ArraySyntax extends Syntax {
      * @param  string $value
      * @return self|string
      */
-    public function separator(string $value = null)
+    public function separator(?string $value = null)
     {
         if (null === $value) {
             return $this->separator;
@@ -75,7 +79,7 @@ class ArraySyntax extends Syntax {
      *
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return "Array of ({$this->syntax}) separated by '{$this->separator}'";
     }
@@ -89,7 +93,7 @@ class ArraySyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\ParseException
      */
-    public function parse(string $text) : array
+    public function parse(string $text): array
     {
         $index = 0;
         $items = Text::split($text, $this->separator);
@@ -97,7 +101,7 @@ class ArraySyntax extends Syntax {
         try {
             foreach ($items as $item) {
                 $array[] = $this->syntax->parse($item);
-                $index += strlen($item) + 1;
+                $index += strlen((string) $item) + 1;
             }
         } catch (ParseException $e) {
             $extra = [
@@ -105,8 +109,13 @@ class ArraySyntax extends Syntax {
                 'item' => $item,
                 'position' => $e->position()
             ];
-            throw new ParseException($this, $text, $index + $e->position(),
-                "Unable to parse the item '{$item}'", $extra, $e
+            throw new ParseException(
+                $this,
+                $text,
+                $index + $e->position(),
+                "Unable to parse the item '{$item}'",
+                $extra,
+                $e
             );
         }
 
@@ -122,10 +131,11 @@ class ArraySyntax extends Syntax {
      *
      * @throws Tarsana\Syntax\Exceptions\DumpException
      */
-    public function dump($values) : string
+    public function dump($values): string
     {
-        if (! is_array($values))
+        if (! is_array($values)) {
             throw new DumpException($this, $values, self::ERROR);
+        }
         $items = [];
         $index = 0;
         try {
@@ -139,5 +149,4 @@ class ArraySyntax extends Syntax {
 
         return Text::join($items, $this->separator);
     }
-
 }
